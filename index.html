@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>abb</title>
     <style>
+        /* 保持原有样式不变 */
         * {
             margin: 0;
             padding: 0;
@@ -103,6 +104,13 @@
             justify-content: center;
             transition: opacity 0.5s ease, pointer-events 0.5s ease;
             padding: 0 20px;
+            opacity: 0; /* 初始隐藏 */
+            pointer-events: none; /* 初始不可点击 */
+        }
+
+        .password-mask.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .password-mask.hidden {
@@ -137,6 +145,12 @@
         .password-input:focus {
             border-color: #d63384;
             box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
+        }
+
+        .loading-indicator {
+            color: #d63384;
+            font-size: 18px;
+            text-align: center;
         }
 
         .rose-container {
@@ -204,12 +218,14 @@
     <div class="stars" id="stars"></div>
 
     <div class="password-mask" id="passwordMask">
-        <div class="mask-hint">abbm</div>
-        <input type="password" class="password-input" id="passwordInput" placeholder="输入密码自动解锁">
+        <div class="loading-indicator" id="loadingIndicator">加载音乐中...</div>
+        <div class="mask-hint" id="maskHint" style="display: none;">abbm</div>
+        <input type="password" class="password-input" id="passwordInput" placeholder="输入密码自动解锁" style="display: none;">
     </div>
 
     <div class="poem-container" id="poemContainer">
         <div class="poem-content">
+            <!-- 保持原有内容不变 -->
 初见那一刻，你眼底的光如流星撞进我心间
 我们走过天街，灯影追着脚步轻旋
 沿着夜晚的河岸漫步，踏乱月影如碎银片片
@@ -261,65 +277,105 @@
 
     <div class="rose-container" id="roseContainer"></div>
 
-    <audio id="backgroundMusic" loop preload="none">
+    <audio id="backgroundMusic" loop>
         <source src="background.mp3" type="audio/mpeg">
         您的浏览器不支持音频播放
-    
+    </audio>
 
     <script>
+        // 页面加载完成后立即开始加载音乐
         window.onload = () => {
-            passwordInput.focus();
+            initStars();
+            loadBackgroundMusic();
         };
 
-        // 星光效果（放大+强闪烁）
-        const stars = document.getElementById('stars');
-        const starCount = 40;
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
+        // 初始化星星效果
+        function initStars() {
+            const stars = document.getElementById('stars');
+            const starCount = 40;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
 
-        for (let i = 0; i < starCount; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            const x = Math.random() * screenWidth;
-            const y = Math.random() * screenHeight;
-            const size = Math.random() * 3 + 5;
-            const delay = Math.random() * 3;
-            
-            star.style.left = `${x}px`;
-            star.style.top = `${y}px`;
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
-            star.style.animationDelay = `${delay}s`;
-            
-            stars.appendChild(star);
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const x = Math.random() * screenWidth;
+                const y = Math.random() * screenHeight;
+                const size = Math.random() * 3 + 5;
+                const delay = Math.random() * 3;
+                
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+                
+                stars.appendChild(star);
+            }
         }
 
-        // 密码解锁+音频播放（仅解锁后播放）
-        const passwordMask = document.getElementById('passwordMask');
-        const passwordInput = document.getElementById('passwordInput');
-        const correctPassword = 'abb';
-        const audio = document.getElementById('backgroundMusic');
+        // 加载背景音乐并监听加载状态
+        function loadBackgroundMusic() {
+            const audio = document.getElementById('backgroundMusic');
+            const passwordMask = document.getElementById('passwordMask');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const maskHint = document.getElementById('maskHint');
+            const passwordInput = document.getElementById('passwordInput');
 
-        passwordInput.addEventListener('input', (e) => {
-            const inputValue = e.target.value.trim();
-            if (inputValue === correctPassword) {
-                passwordMask.classList.add('hidden');
-                document.querySelector('.poem-container').focus();
-                passwordInput.blur();
-                document.activeElement.blur();
-                audio.play().catch(err => {
-                    alert('请轻触页面播放背景音乐（同文件夹需有background.mp3）');
-                });
-            }
-        });
+            // 显示密码遮罩（加载状态）
+            passwordMask.classList.add('visible');
 
-        // 加密草莓熊玫瑰（单行铺满，无空隙）
+            // 监听音乐加载完成事件
+            audio.addEventListener('canplaythrough', () => {
+                // 音乐加载完成，显示密码输入框
+                loadingIndicator.style.display = 'none';
+                maskHint.style.display = 'block';
+                passwordInput.style.display = 'block';
+                passwordInput.focus();
+                
+                // 绑定密码验证事件
+                bindPasswordVerification(audio);
+            });
+
+            // 监听加载错误事件
+            audio.addEventListener('error', () => {
+                loadingIndicator.textContent = '音乐加载失败，请刷新页面重试';
+            });
+
+            // 开始加载音乐
+            audio.load();
+        }
+
+        // 绑定密码验证事件
+        function bindPasswordVerification(audio) {
+            const passwordMask = document.getElementById('passwordMask');
+            const passwordInput = document.getElementById('passwordInput');
+            const correctPassword = 'abb';
+
+            passwordInput.addEventListener('input', (e) => {
+                const inputValue = e.target.value.trim();
+                if (inputValue === correctPassword) {
+                    passwordMask.classList.remove('visible');
+                    passwordMask.classList.add('hidden');
+                    document.querySelector('.poem-container').focus();
+                    passwordInput.blur();
+                    document.activeElement.blur();
+                    
+                    // 播放音乐
+                    audio.play().catch(err => {
+                        alert('请轻触页面播放背景音乐');
+                    });
+                }
+            });
+        }
+
+        // 玫瑰效果（保持原有逻辑）
         const poemContainer = document.getElementById('poemContainer');
         const roseContainer = document.getElementById('roseContainer');
         let isRoseVisible = false;
         const roseIcon = '🌹';
         const rosePerRow = 32;
-        const bouquetCenterX = screenWidth / 2;
+        const bouquetCenterX = window.innerWidth / 2;
         const rowRadius = 340;
 
         poemContainer.addEventListener('scroll', () => {
@@ -366,7 +422,7 @@
                     const rose = document.createElement('div');
                     rose.className = 'rose rose-row-3';
                     rose.textContent = roseIcon;
-                    const x = (screenWidth / 12) * i - 10;
+                    const x = (window.innerWidth / 12) * i - 10;
                     const size = Math.random() * 10 + 22;
                     const delay = Math.random() * 0.4;
                     rose.style.left = `${x}px`;
@@ -389,3 +445,6 @@
             }, 800);
         }
     </script>
+
+</body>
+</html>
