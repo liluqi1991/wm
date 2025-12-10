@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 优化1：添加viewport-fit=cover适配iPhone刘海/灵动岛，修复视口计算 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>abb</title>
     <style>
         /* 全局重置 */
@@ -10,16 +11,20 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-box-sizing: border-box; /* Safari兼容 */
             font-family: "PingFang SC", "STKaiti", "KaiTi", serif;
         }
 
+        /* 优化2：修复body高度和滚动特性，替换overflow:hidden为auto */
         body {
             background: linear-gradient(120deg, #fff1f9, #ffd1dc, #ffc1e9);
-            height: 100vh;
-            width: 100vw;
+            min-height: 100vh; /* 改用min-height避免视口截断 */
+            height: auto; /* 高度自适应 */
+            width: 100%; /* 替换100vw避免滚动条 */
             padding: 20px 0;
             position: relative;
-            overflow: hidden;
+            overflow: auto; /* 替换hidden，允许body滚动 */
+            -webkit-overflow-scrolling: touch; /* Safari顺滑滚动 */
         }
 
         /* 星星效果（初始隐藏） */
@@ -39,14 +44,22 @@
             background: #fff;
             border-radius: 2px;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            /* 优化3：添加-webkit前缀兼容Safari动画 */
+            -webkit-animation: twinkle 1.8s infinite ease-in-out;
             animation: twinkle 1.8s infinite ease-in-out;
             opacity: 0.4;
         }
 
+        /* 优化3：补充Safari私有动画前缀 */
+        @-webkit-keyframes twinkle {
+            0% { opacity: 0.4; -webkit-transform: scale(0.9); }
+            50% { opacity: 1.2; -webkit-transform: scale(1.4); }
+            100% { opacity: 0.4; -webkit-transform: scale(0.9); }
+        }
         @keyframes twinkle {
-            0% { opacity: 0.4; transform: scale(0.9); }
-            50% { opacity: 1.2; transform: scale(1.4); }
-            100% { opacity: 0.4; transform: scale(0.9); }
+            0% { opacity: 0.4; -webkit-transform: scale(0.9); transform: scale(0.9); }
+            50% { opacity: 1.2; -webkit-transform: scale(1.4); transform: scale(1.4); }
+            100% { opacity: 0.4; -webkit-transform: scale(0.9); transform: scale(0.9); }
         }
 
         /* 诗句容器（初始隐藏） */
@@ -55,18 +68,23 @@
             z-index: 1;
             max-width: 320px;
             margin: 0 auto;
-            padding: 8px 15px 60px 15px;
+            /* 优化4：增加上内边距（从8px→20px），确保上边缘空白 */
+            padding: 20px 15px 60px 15px;
             background: transparent;
             box-shadow: none;
             border-radius: 0;
-            height: calc(100vh - 40px);
+            /* 优化2：改用min-height，避免高度截断 */
+            min-height: calc(100vh - 40px);
+            height: auto;
             overflow-y: auto;
             overflow-x: hidden;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            mask-image: linear-gradient(to bottom, transparent 0%, #fff 8%, #fff 92%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #fff 8%, #fff 92%, transparent 100%);
+            /* 优化4：调整遮罩渐变起点（8%→15%），确保遮罩显示正常 */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #fff 15%, #fff 92%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #fff 15%, #fff 92%, transparent 100%);
             display: none; /* 初始隐藏，密码验证后显示 */
+            -webkit-overflow-scrolling: touch; /* Safari顺滑滚动 */
         }
 
         .poem-container::-webkit-scrollbar {
@@ -86,7 +104,8 @@
         @media (min-width: 390px) {
             .poem-container {
                 max-width: 340px;
-                padding: 8px 15px 65px 15px;
+                /* 优化4：同步增加上内边距 */
+                padding: 22px 15px 65px 15px;
             }
             .poem-content {
                 font-size: 18px;
@@ -99,8 +118,10 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            /* 优化2：改用min-height确保全屏 */
+            min-height: 100vh;
+            height: 100%;
             background: #ffd1dc;
             z-index: 999;
             display: flex;
@@ -108,9 +129,9 @@
             align-items: center;
             justify-content: center;
             padding: 0 20px;
-            /* 初始就显示，不需要过渡，直到密码验证后隐藏 */
             opacity: 1;
             pointer-events: auto;
+            -webkit-box-sizing: border-box;
         }
 
         .mask-hint {
@@ -161,6 +182,7 @@
             pointer-events: none;
             z-index: 2;
             opacity: 0;
+            -webkit-transition: opacity 0.3s ease;
             transition: opacity 0.3s ease;
             overflow: hidden;
             display: none; /* 初始隐藏，密码验证后显示 */
@@ -171,40 +193,85 @@
             bottom: 10px;
             color: #c24a7c;
             opacity: 0;
+            /* 优化3：添加-webkit前缀兼容Safari动画 */
+            -webkit-animation: rose-emerge 1.2s ease-out forwards;
             animation: rose-emerge 1.2s ease-out forwards;
+            -webkit-transform-origin: center;
             transform-origin: center;
         }
 
+        /* 优化3：补充Safari私有动画前缀 */
+        @-webkit-keyframes rose-emerge {
+            0% {
+                -webkit-transform: scale(0.1);
+                opacity: 0;
+                bottom: -20px;
+            }
+            70% {
+                -webkit-transform: scale(1);
+                opacity: 1;
+                bottom: 10px;
+            }
+            100% {
+                -webkit-transform: scale(1.05);
+                opacity: 1;
+                bottom: 10px;
+            }
+        }
         @keyframes rose-emerge {
             0% {
+                -webkit-transform: scale(0.1);
                 transform: scale(0.1);
                 opacity: 0;
                 bottom: -20px;
             }
             70% {
+                -webkit-transform: scale(1);
                 transform: scale(1);
                 opacity: 1;
                 bottom: 10px;
             }
             100% {
+                -webkit-transform: scale(1.05);
                 transform: scale(1.05);
                 opacity: 1;
                 bottom: 10px;
             }
         }
 
+        /* 优化3：补充Safari私有动画前缀 */
+        @-webkit-keyframes rose-hide {
+            0% {
+                -webkit-transform: scale(1.05);
+                opacity: 1;
+                bottom: 10px;
+            }
+            30% {
+                -webkit-transform: scale(1);
+                opacity: 0.9;
+                bottom: 10px;
+            }
+            100% {
+                -webkit-transform: scale(0.1);
+                opacity: 0;
+                bottom: -20px;
+            }
+        }
         @keyframes rose-hide {
             0% {
+                -webkit-transform: scale(1.05);
                 transform: scale(1.05);
                 opacity: 1;
                 bottom: 10px;
             }
             30% {
+                -webkit-transform: scale(1);
                 transform: scale(1);
                 opacity: 0.9;
                 bottom: 10px;
             }
             100% {
+                -webkit-transform: scale(0.1);
                 transform: scale(0.1);
                 opacity: 0;
                 bottom: -20px;
@@ -240,7 +307,7 @@
 每一处驻足，都印着我们的身影点点
 时光忽然停滞，像风筝越升越高，线轴无声飞转
 忽然一声轻响，只剩风萦绕耳边
-
+————
 新年钟声响起，我们去人海中跨年，在送别时相见
 与你重逢的瞬间，对视的目光没有陌生，只有炽热蔓延
 纵然知道你将走向天边，也愿握住这份温暖
@@ -250,7 +317,7 @@
 五彩气球从人群中挣脱，飞向暗蓝的天，眼前一切如梦如幻
 不知道是重逢的斑斓，
 还是怕你像气球飞远，只留我空握余温在掌间
-
+————
 转眼来到春天，草莓成熟时又相见
 像梦一场，情节忽然反转
 我们一起骑车，掠过林荫和江岸
@@ -267,7 +334,7 @@
 一起在菜市场挑挑拣拣，回家做出鲜香酸甜
 一起计算柴米油盐，精打细算筹划明天
 幸福就印在生活里的点点滴滴，藏在时光里的平平淡淡
-
+————
 转眼走过一春秋，时光悄然流转
 花开花落，寒来暑往，季节又回到初见
 风里的味道依然是当初那般清甜
@@ -364,6 +431,11 @@
                 poemContainer.style.display = 'block';
                 roseContainer.style.display = 'block';
 
+                // 优化5：强制设置初始滚动位置（关键！解决上边缘空白缺失）
+                setTimeout(() => {
+                    poemContainer.scrollTop = 10; // 轻微向下滚动，显示上边距
+                }, 100);
+
                 // 3. 自动播放音频（处理浏览器自动播放策略）
                 audio.play().catch(err => {
                     // 如果自动播放失败，提示用户点击页面播放
@@ -446,6 +518,8 @@
                 const roses = document.querySelectorAll('.rose');
                 roses.forEach(rose => {
                     rose.style.animation = 'rose-hide 0.8s ease-out forwards';
+                    // 补充Safari前缀
+                    rose.style.webkitAnimation = 'rose-hide 0.8s ease-out forwards';
                 });
                 setTimeout(() => {
                     roseContainer.style.opacity = 0;
