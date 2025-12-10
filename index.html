@@ -502,7 +502,7 @@
             const { scrollTop, clientHeight, scrollHeight } = poemContainer;
             // 优化触发阈值：滚动到距离底部80px内就触发（最后一行可见时）
             // 80px适配不同屏幕尺寸，确保最后一行出现时立即触发
-            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 95;
+            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 130;
             
             if (isAtBottom) {
                 isRoseShowed = true;
