@@ -70,34 +70,33 @@
             100% { opacity: 0.4; transform: scale(0.9); }
         }
 
-        /* 诗句容器 - 上下无间距，顶着边框，无遮罩 */
+        /* 诗句容器 - 上下无间距，正常显示 */
         .poem-container {
             position: relative;
-            z-index: 2; /* 文字层高于星星/玫瑰 */
+            z-index: 2;
             max-width: 320px;
-            margin: 0 auto; /* 水平居中 */
-            padding: 0 15px; /* 仅保留左右内边距，上下无间距 */
+            margin: 0 auto;
+            padding: 0 15px; /* 仅左右内边距 */
             background: transparent;
-            height: 100vh; /* 充满视口高度 */
+            height: 100vh;
             max-height: -webkit-fill-available;
             overflow-y: auto;
             overflow-x: hidden;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            display: none; /* 初始隐藏 */
+            display: none;
             -webkit-overflow-scrolling: touch;
-            opacity: 1; /* 始终不透明 */
         }
 
         .poem-container.show {
-            display: block; /* 显示容器 */
+            display: block;
         }
 
         .poem-container::-webkit-scrollbar {
-            display: none; /* 隐藏滚动条 */
+            display: none;
         }
 
-        /* 诗句文字 - 纯文字顶层显示 */
+        /* 诗句文字 */
         .poem-content {
             color: #4a3246;
             font-size: 16px !important;
@@ -106,7 +105,7 @@
             white-space: pre-line;
             font-weight: 400;
             position: relative;
-            z-index: 3; /* 文字自身最高层 */
+            z-index: 3;
         }
 
         @media (min-width: 390px) {
@@ -119,7 +118,7 @@
             }
         }
 
-        /* 密码遮罩（仅登录页） */
+        /* 密码遮罩 */
         .password-mask {
             position: fixed;
             top: 0;
@@ -180,7 +179,7 @@
             text-align: center;
         }
 
-        /* 玫瑰容器 - 固定在最底部，不遮挡文字 */
+        /* 玫瑰容器 */
         .rose-container {
             position: fixed;
             bottom: 0;
@@ -188,7 +187,7 @@
             width: 100%;
             height: 50px;
             pointer-events: none;
-            z-index: 1; /* 低于文字层 */
+            z-index: 1;
             opacity: 0;
             transition: opacity 0.3s ease;
             -webkit-transition: opacity 0.3s ease;
@@ -294,7 +293,8 @@
     <div class="password-mask" id="passwordMask">
         <div class="loading-indicator" id="loadingIndicator">...</div>
         <div class="mask-hint" id="maskHint">abbm</div>
-        <input type="password" class="password-input" id="passwordInput" placeholder="输入密码自动解锁">
+        <!-- 自动获焦 -->
+        <input type="password" class="password-input" id="passwordInput" placeholder="输入密码自动解锁" autofocus>
     </div>
 
     <div class="poem-container" id="poemContainer">
@@ -368,13 +368,6 @@
         const roseContainer = document.getElementById('roseContainer');
         const correctPassword = 'abb';
 
-        // 自动滚动核心配置
-        let autoScrollTimer = null;
-        let isAutoScrolling = false;
-        let scrollSpeedPerFrame = 0;
-        // 总滚动时间（文字从底部滚到顶部的总时长，单位ms，越大越慢）
-        const totalScrollTime = 60000; // 60秒，可根据需要调整
-
         // 页面加载完成初始化
         document.addEventListener('DOMContentLoaded', () => {
             initStars();
@@ -413,12 +406,17 @@
             }
         }
 
-        // 显示密码输入框
+        // 显示密码输入框（确保自动获焦）
         function showPasswordUI() {
             loadingIndicator.style.display = 'none';
             maskHint.style.display = 'block';
             passwordInput.style.display = 'block';
-            setTimeout(() => passwordInput.focus(), 200);
+            // 强制触发焦点，兼容移动端
+            setTimeout(() => {
+                passwordInput.focus();
+                // 兼容iOS微信键盘呼出
+                passwordInput.click();
+            }, 300);
         }
 
         // 加载音频
@@ -438,18 +436,9 @@
                 passwordMask.style.pointerEvents = 'none';
                 setTimeout(() => passwordMask.style.display = 'none', 500);
 
-                // 显示核心内容
+                // 显示核心内容（无自动滚动，直接正常显示）
                 stars.style.display = 'block';
-                poemContainer.classList.add('show'); // 显示文字容器
-                
-                // 强制重绘后初始化滚动（第一行在底部）
-                setTimeout(() => {
-                    // 初始滚动到最底部（第一行在容器下边框外）
-                    poemContainer.scrollTop = poemContainer.scrollHeight;
-                    calculateScrollSpeed(); // 计算滚动速度
-                    startAutoScroll(); // 启动向上滚动
-                }, 300);
-
+                poemContainer.classList.add('show');
                 roseContainer.style.display = 'block';
 
                 // 播放音频
@@ -458,66 +447,10 @@
                     document.body.addEventListener('click', () => audio.play(), { once: true });
                 });
 
-                // 绑定玫瑰效果和触屏停止滚动
+                // 绑定玫瑰效果（仅保留手动滚动触发玫瑰）
                 bindRoseScrollEffect();
-                bindTouchStopScroll();
             }
         });
-
-        // 计算滚动速度（徐徐向上的速度）
-        function calculateScrollSpeed() {
-            const scrollHeight = poemContainer.scrollHeight; // 内容总高度
-            const clientHeight = poemContainer.clientHeight; // 容器可视高度
-            const totalScrollDistance = scrollHeight - clientHeight; // 总滚动距离（从底到顶）
-            const frameRate = 16; // 浏览器平均帧间隔（ms）
-            const totalFrames = totalScrollTime / frameRate; // 总帧数
-            scrollSpeedPerFrame = totalScrollDistance / totalFrames; // 每帧滚动距离
-        }
-
-        // 启动自动滚动（第一行从下向上徐徐进入）
-        function startAutoScroll() {
-            if (isAutoScrolling) return;
-            isAutoScrolling = true;
-
-            function scrollStep() {
-                let currentScrollTop = poemContainer.scrollTop;
-                
-                // 滚动到顶部时停止
-                if (currentScrollTop <= 0) {
-                    stopAutoScroll();
-                    return;
-                }
-
-                // 向上滚动：逐步减少scrollTop（徐徐进入）
-                currentScrollTop -= scrollSpeedPerFrame;
-                poemContainer.scrollTop = Math.max(currentScrollTop, 0); // 防止负数
-                
-                // 持续执行
-                autoScrollTimer = requestAnimationFrame(scrollStep);
-            }
-
-            autoScrollTimer = requestAnimationFrame(scrollStep);
-        }
-
-        // 停止自动滚动
-        function stopAutoScroll() {
-            if (!isAutoScrolling) return;
-            cancelAnimationFrame(autoScrollTimer);
-            isAutoScrolling = false;
-        }
-
-        // 触屏/手动滚动停止自动滚动
-        function bindTouchStopScroll() {
-            // 触屏立即停止
-            poemContainer.addEventListener('touchstart', () => {
-                stopAutoScroll();
-            }, { passive: true });
-
-            // 手动滚动也停止
-            poemContainer.addEventListener('scroll', () => {
-                if (isAutoScrolling) stopAutoScroll();
-            }, { passive: true });
-        }
 
         // 玫瑰效果
         function bindRoseScrollEffect() {
@@ -602,16 +535,10 @@
             }
         }
 
-        // 旋转屏幕适配
+        // 旋转屏幕适配（仅保留字体缩放兜底）
         window.addEventListener('resize', () => {
             document.documentElement.style.fontSize = '16px !important';
             document.body.style.webkitTextSizeAdjust = 'none !important';
-            // 窗口变化重新计算滚动速度
-            if (isAutoScrolling) {
-                stopAutoScroll();
-                calculateScrollSpeed();
-                startAutoScroll();
-            }
         });
     </script>
 </body>
