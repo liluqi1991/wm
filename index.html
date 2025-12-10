@@ -179,7 +179,7 @@
             text-align: center;
         }
 
-        /* 玫瑰容器 */
+        /* 玫瑰容器 - 使用SVG素材 */
         .rose-container {
             position: fixed;
             bottom: 0;
@@ -436,7 +436,7 @@
                 passwordMask.style.pointerEvents = 'none';
                 setTimeout(() => passwordMask.style.display = 'none', 500);
 
-                // 显示核心内容（无自动滚动，直接正常显示）
+                // 显示核心内容
                 stars.style.display = 'block';
                 poemContainer.classList.add('show');
                 roseContainer.style.display = 'block';
@@ -447,15 +447,36 @@
                     document.body.addEventListener('click', () => audio.play(), { once: true });
                 });
 
-                // 绑定玫瑰效果（仅保留手动滚动触发玫瑰）
+                // ✅ 修复1：诗句自动滚动（5秒从底部滚动到顶部）
+                setTimeout(() => {
+                    const maxScrollTop = poemContent.scrollHeight - poemContainer.clientHeight;
+                    if (maxScrollTop > 0) {
+                        // 先滚动到底部
+                        poemContainer.scrollTop = maxScrollTop;
+                        // 5秒内滚动到顶部
+                        const startTime = performance.now();
+                        const animateScroll = () => {
+                            const elapsed = performance.now() - startTime;
+                            const progress = Math.min(elapsed / 5000, 1);
+                            poemContainer.scrollTop = maxScrollTop * (1 - progress);
+                            if (progress < 1) {
+                                requestAnimationFrame(animateScroll);
+                            }
+                        };
+                        requestAnimationFrame(animateScroll);
+                    }
+                }, 500);
+
+                // ✅ 修复2：玫瑰触发逻辑优化
                 bindRoseScrollEffect();
             }
         });
 
-        // 玫瑰效果
+        // 玫瑰效果（使用SVG素材，修复触发逻辑）
         function bindRoseScrollEffect() {
             let isRoseVisible = false;
-            const roseIcon = '🌹';
+            // ✅ 修复3：替换为SVG玫瑰素材（更精致的矢量图）
+            const roseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#c24a7c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 21.35l-1.45-1.32C5.4 15.37 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.87-8.55 11.54L12 21.35z"/></svg>`;
             const rosePerRow = 32;
             const bouquetCenterX = (window.innerWidth || document.documentElement.clientWidth) / 2;
             const rowRadius = 340;
@@ -464,11 +485,14 @@
                 const scrollTop = poemContainer.scrollTop;
                 const scrollHeight = poemContainer.scrollHeight;
                 const clientHeight = poemContainer.clientHeight;
-                const isScrollToBottom = Math.abs(scrollTop + clientHeight - scrollHeight) <= 20;
+                
+                // ✅ 修复2：更精确的底部检测（距离底部10px内触发）
+                const isScrollToBottom = scrollTop + clientHeight >= scrollHeight - 10;
 
                 if (isScrollToBottom && !isRoseVisible) {
                     isRoseVisible = true;
-                    createSingleRowRoses();
+                    // ✅ 延迟1秒后触发玫瑰
+                    setTimeout(createSingleRowRoses, 1000);
                 } else if (!isScrollToBottom && isRoseVisible) {
                     isRoseVisible = false;
                     hideRoses();
@@ -483,7 +507,8 @@
                 for (let i = 0; i < rosePerRow; i++) {
                     const rose = document.createElement('div');
                     rose.className = 'rose rose-row-3';
-                    rose.textContent = roseIcon;
+                    // ✅ 使用SVG代替emoji
+                    rose.innerHTML = roseSVG;
 
                     const angle = i * (Math.PI / (rosePerRow - 1));
                     const x = bouquetCenterX + Math.cos(angle) * rowRadius;
@@ -506,7 +531,7 @@
                     for (let i = 0; i < 12; i++) {
                         const rose = document.createElement('div');
                         rose.className = 'rose rose-row-3';
-                        rose.textContent = roseIcon;
+                        rose.innerHTML = roseSVG; // 使用SVG
                         const x = (screenWidth / 12) * i - 10;
                         const size = Math.random() * 10 + 22;
                         const delay = Math.random() * 0.4;
