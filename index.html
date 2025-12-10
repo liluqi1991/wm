@@ -2,198 +2,392 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>诗意滑动</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>gbbd</title>
     <style>
-        body, html {
+        /* 锁定微信字体缩放 */
+        html {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100% !important;
+            text-size-adjust: 100% !important;
+            -moz-text-size-adjust: 100% !important;
+            -ms-text-size-adjust: 100% !important;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            height: 100%;
-            overflow: hidden; /* 初始隐藏滚动条 */
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0; /* 可选背景色 */
-        }
-
-        #loading-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            font-size: 24px;
-            color: #666;
-        }
-
-        #password-screen {
-            display: none; /* 默认隐藏 */
-            height: 100%;
-            overflow-y: auto; /* 允许垂直滚动 */
-            padding: 20px;
             box-sizing: border-box;
+            font-family: "PingFang SC", "STKaiti", "KaiTi", serif;
+            font-size: inherit !important;
         }
 
-        .input-container {
-            margin-top: 50vh; /* 将输入框放在屏幕下方附近 */
-            text-align: center;
+        body {
+            background: linear-gradient(120deg, #fff1f9, #ffd1dc, #ffc1e9);
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            overflow: hidden;
+            -webkit-overflow-scrolling: touch;
+            height: -webkit-fill-available;
+            width: -webkit-fill-available;
+            -webkit-text-size-adjust: none !important;
+            text-size-adjust: none !important;
         }
 
-        #password {
-            padding: 10px;
-            font-size: 18px;
-            width: 200px;
-        }
-
-        .poem-container {
-            /* 用于定位诗句 */
-        }
-
-        .poem-line {
-            position: absolute;
+        /* 星星效果 */
+        .stars {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            display: none;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 2px;
+            -webkit-clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: twinkle 1.8s infinite ease-in-out;
+            opacity: 0.4;
+            -webkit-animation: twinkle 1.8s infinite ease-in-out;
+        }
+
+        @-webkit-keyframes twinkle {
+            0% { opacity: 0.4; -webkit-transform: scale(0.9); transform: scale(0.9); }
+            50% { opacity: 1.2; -webkit-transform: scale(1.4); transform: scale(1.4); }
+            100% { opacity: 0.4; -webkit-transform: scale(0.9); transform: scale(0.9); }
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1.2; transform: scale(1.4); }
+            100% { opacity: 0.4; transform: scale(0.9); }
+        }
+
+        /* 诗句容器 - 上下无间距，正常显示 */
+        .poem-container {
+            position: relative;
+            z-index: 2;
+            max-width: 320px;
+            margin: 0 auto;
+            padding: 0 15px; /* 仅左右内边距 */
+            background: transparent;
+            height: 100vh;
+            max-height: -webkit-fill-available;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            display: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .poem-container.show {
+            display: block;
+        }
+
+        .poem-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 诗句文字 */
+        .poem-content {
+            color: #4a3246;
+            font-size: 16px !important;
+            line-height: 2.4;
+            text-align: left;
+            white-space: pre-line;
+            font-weight: 400;
+            position: relative;
+            z-index: 3;
+        }
+
+        @media (min-width: 390px) {
+            .poem-container {
+                max-width: 340px;
+            }
+            .poem-content {
+                font-size: 18px !important;
+                line-height: 2.5;
+            }
+        }
+
+        /* 密码遮罩 */
+        .password-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            width: -webkit-fill-available;
+            height: 100vh;
+            height: -webkit-fill-available;
+            background: #ffd1dc;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mask-hint {
+            color: #d63384;
+            font-size: 22px !important;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
             text-align: center;
-            font-size: 24px;
-            padding: 10px;
-            box-sizing: border-box;
-            /* 平滑过渡，虽然我们用 JS 控制，但 CSS 过渡有时也有帮助 */
-            transition: transform 0.1s linear;
-            pointer-events: none; /* 防止诗句阻挡用户滚动 */
+            text-transform: lowercase;
+            display: none;
+        }
+
+        .password-input {
+            width: 100%;
+            max-width: 280px;
+            padding: 15px 20px;
+            border: 2px solid #d63384;
+            border-radius: 30px;
+            background: #fff;
+            font-size: 17px !important;
+            color: #d63384;
+            outline: none;
+            text-align: center;
+            letter-spacing: 2px;
+            display: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .password-input:focus {
+            border-color: #d63384;
+            box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
+            -webkit-box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
+        }
+
+        /* 加载提示 */
+        .loading-indicator {
+            color: #d63384;
+            font-size: 18px !important;
+            text-align: center;
         }
     </style>
 </head>
 <body>
+    <div class="stars" id="stars"></div>
 
-<div id="loading-screen">正在加载音乐...</div>
-
-<div id="password-screen">
-    <!-- 密码输入区域 -->
-    <div class="input-container">
-        <label for="password">请输入密码:</label><br><br>
-        <input type="password" id="password" placeholder="...">
+    <div class="password-mask" id="passwordMask">
+        <div class="loading-indicator" id="loadingIndicator">加载中...</div>
+        <div class="mask-hint" id="maskHint">请输入密码</div>
+        <!-- 自动获焦 -->
+        <input type="password" class="password-input" id="passwordInput" placeholder="输入密码自动解锁" autofocus>
     </div>
 
-    <!-- 诗句容器 -->
-    <div class="poem-container">
-        <!-- 第一行诗句 -->
-        <div id="poem-line-1" class="poem-line">这是第一行诗句</div>
-        <!-- 可以添加更多行 -->
-        <!-- <div id="poem-line-2" class="poem-line">这是第二行诗句</div> -->
+    <div class="poem-container" id="poemContainer">
+        <div class="poem-content" id="poemContent">
+初见那一刻，你眼底的光如流星撞进我心间
+我们走过天街，灯影追着脚步轻旋
+沿着夜晚的河岸漫步，踏乱月影如碎银片片
+秋千轻摇，摇出初见的丝丝微甜
+走上西兴大桥，看两岸灯火点点，晚风卷起衣角翩翩
+倚在江边楼顶，夕阳和晚霞铺满眼前
+漫步清河古街，指尖掠过青瓦墙垣
+穿行西湖苏堤畔，裙角被露水沾满
+长椅上看流云舒卷，花丛边看蝶影翩跹
+每一处驻足，都印着我们的身影点点
+时光忽然停滞，像风筝越升越高，线轴无声飞转
+忽然一声轻响，只剩风萦绕耳边
+————
+新年钟声响起，我们去人海中跨年，在送别时相见
+与你重逢的瞬间，对视的目光没有陌生，只有炽热蔓延
+纵然知道你将走向天边，也愿握住这份温暖
+深夜车轮轻响深巷，街灯泛着昏黄光线
+心里藏着欢喜，也裹着细碎的伤感
+像是纪念过往走过的晨昏，又像给这段忽明忽暗的路写下句点
+五彩气球从人群中挣脱，飞向暗蓝的天，眼前一切如梦如幻
+不知道是重逢的斑斓，
+还是怕你像气球飞远，只留我空握余温在掌间
+————
+转眼来到春天，草莓成熟时又相见
+像梦一场，情节忽然反转
+我们一起骑车，掠过林荫和江岸
+一起散步在公园，呼吸荷花的丝丝香甜
+一起看凌晨的日出，夜晚黑色变成凌晨的漫天火焰
+一起让风掀起衣角，穿梭在城市的脉络间
+一起牵着手爬山，迈过一级级石坎
+风里夹着悄悄话，轻轻吹进彼此耳畔
+我们并肩昂桑湖纤道，踏着苏州古镇青石板，
+看小河流淌，把双脚浸入水波之间
+倚着黄浦江游船，看两岸高楼深入云端
+骑上千岛湖长桥，看水雾漫过远山
+我们一起探店，尝遍街角的烟火小餐
+一起在菜市场挑挑拣拣，回家做出鲜香酸甜
+一起计算柴米油盐，精打细算筹划明天
+幸福就印在生活里的点点滴滴，藏在时光里的平平淡淡
+————
+转眼走过一春秋，时光悄然流转
+花开花落，寒来暑往，季节又回到初见
+风里的味道依然是当初那般清甜
+又想回到天街河边，重温相遇的心动瞬间，拾起过往碎碎片段
+只是这一次，想停在婚姻登记处前
+和你一起推开那扇门，携手相依，直到永远
+        </div>
     </div>
-</div>
 
-<script>
-    (function() {
-        // --- 配置区 ---
-        const mp3Path = 'path/to/your/music.mp3'; // <<<--- 请替换为你的实际MP3路径
-        const poemText = "这是第一行诗句"; // <<<--- 诗句内容
+    <audio id="backgroundMusic" loop>
+        <source src="background.mp3" type="audio/mpeg">
+        您的浏览器不支持音频播放
+    </audio>
 
-        // --- 获取DOM元素 ---
-        const loadingScreen = document.getElementById('loading-screen');
-        const passwordScreen = document.getElementById('password-screen');
-        const poemLineElement = document.getElementById('poem-line-1');
-        const passwordInput = document.getElementById('password');
+    <script>
+        // 核心元素
+        const audio = document.getElementById('backgroundMusic');
+        const passwordMask = document.getElementById('passwordMask');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const maskHint = document.getElementById('maskHint');
+        const passwordInput = document.getElementById('passwordInput');
+        const stars = document.getElementById('stars');
+        const poemContainer = document.getElementById('poemContainer');
+        const poemContent = document.getElementById('poemContent');
+        const correctPassword = 'abb';
 
-        // 设置诗句文本
-        if (poemLineElement) {
-            poemLineElement.textContent = poemText;
-        }
+        // 页面加载完成初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initStars();
+            loadAudioGracefully(); // 确保音频加载完成后再显示密码界面
 
-        // --- MP3 加载逻辑 ---
-        let isAudioLoaded = false;
-        const audio = new Audio();
-        audio.preload = 'auto';
-        audio.src = mp3Path;
-
-        // 监听加载成功
-        audio.addEventListener('canplaythrough', function() {
-            console.log("✅ MP3 加载完成");
-            isAudioLoaded = true;
-            showPasswordScreen();
+            // 字体缩放兜底
+            window.addEventListener('resize', () => {
+                document.documentElement.style.fontSize = '16px !important';
+                document.body.style.webkitTextSizeAdjust = 'none !important';
+            }, { passive: true });
         });
 
-        // 监听加载错误 (可选)
-        audio.addEventListener('error', function(e) {
-            console.error("❌ MP3 加载失败:", e);
-            alert("音乐加载失败，但将继续显示界面。");
-            // 即使失败也显示界面
-            showPasswordScreen();
-        });
+        // 初始化星星
+        function initStars() {
+            const starCount = 40;
+            const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+            const screenHeight = window.innerHeight || document.documentElement.clientHeight;
 
-        // 显示密码界面的函数
-        function showPasswordScreen() {
-            loadingScreen.style.display = 'none';
-            passwordScreen.style.display = 'block';
-            document.body.style.overflow = 'auto'; // 启用滚动
-            // 开始诗句动画
-            setTimeout(startPoemSlideAnimation, 100); // 稍微延迟确保界面渲染完成
-        }
-
-
-        // --- 诗句滑动逻辑 ---
-        let animationId = null; // 用于存储 requestAnimationFrame ID
-        let startY = window.innerHeight; // 起始位置：屏幕底部之外
-        let targetY = 0; // 结束位置：屏幕顶部
-        let currentY = startY;
-        const duration = 8000; // 动画持续时间 (毫秒)
-        let startTime = null;
-
-        function startPoemSlideAnimation() {
-            if (!poemLineElement) return;
-
-            // 初始化诗句位置
-            poemLineElement.style.transform = `translateY(${startY}px)`;
-
-            // 定义动画帧函数
-            function animate(currentTime) {
-                if (!startTime) startTime = currentTime;
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-
-                // 使用 ease-out 缓动函数
-                const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-                currentY = startY + (targetY - startY) * easedProgress;
-                poemLineElement.style.transform = `translateY(${currentY}px)`;
-
-                // 如果动画未完成，继续下一帧
-                if (progress < 1) {
-                    animationId = requestAnimationFrame(animate);
-                } else {
-                    // 动画结束，固定在顶部
-                    poemLineElement.style.transform = `translateY(${targetY}px)`;
-                    console.log("📜 诗句滑动动画结束");
-                }
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const x = Math.random() * screenWidth;
+                const y = Math.random() * screenHeight;
+                const size = Math.random() * 3 + 5;
+                const delay = Math.random() * 3;
+                
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+                star.style.webkitAnimationDelay = `${delay}s`;
+                
+                stars.appendChild(star);
             }
-
-            // 启动动画
-            animationId = requestAnimationFrame(animate);
-
-            // 添加用户交互监听器来停止动画
-            const stopAnimation = () => {
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                    animationId = null;
-                    console.log("✋ 用户操作中断了诗句滑动");
-                }
-                // 移除监听器，防止重复触发
-                window.removeEventListener('wheel', stopAnimation);
-                window.removeEventListener('touchstart', stopAnimation);
-            };
-
-            // 监听滚轮和触摸开始事件
-            window.addEventListener('wheel', stopAnimation, { once: true });
-            window.addEventListener('touchstart', stopAnimation, { once: true });
         }
 
-        // --- 页面加载完成后开始加载音频 ---
-        window.addEventListener('load', function() {
-            // 音频加载已在上面定义并绑定事件监听器
-            // 这里不需要额外操作，设置 src 后浏览器会自动开始加载
-             console.log("🚀 页面加载完成，开始加载音频...");
+        // 显示密码输入框（确保音频加载完成后再显示）
+        function showPasswordUI() {
+            loadingIndicator.style.display = 'none';
+            maskHint.style.display = 'block';
+            passwordInput.style.display = 'block';
+            // 强制触发焦点，兼容移动端
+            setTimeout(() => {
+                passwordInput.focus();
+                // 兼容iOS微信键盘呼出
+                passwordInput.click();
+            }, 300);
+        }
+
+        // 加载音频（确保加载完成后再显示密码界面）
+        function loadAudioGracefully() {
+            audio.load();
+            audio.addEventListener('canplaythrough', () => {
+                console.log('✅ 音频加载完成，显示密码界面');
+                showPasswordUI();
+            });
+            audio.addEventListener('error', (err) => {
+                console.error('❌ 音频加载失败:', err);
+                // 即使加载失败，也显示密码界面
+                showPasswordUI();
+            });
+        }
+
+        // 密码验证 & 核心逻辑触发
+        passwordInput.addEventListener('input', (e) => {
+            const inputValue = e.target.value.trim();
+            if (inputValue === correctPassword) {
+                // 隐藏密码层
+                passwordMask.style.opacity = 0;
+                passwordMask.style.webkitOpacity = 0;
+                passwordMask.style.pointerEvents = 'none';
+                setTimeout(() => passwordMask.style.display = 'none', 500);
+
+                // 显示核心内容
+                stars.style.display = 'block';
+                poemContainer.classList.add('show');
+                
+                // ✅ 修复1：诗句自动滚动（从屏幕底部外缓慢滑到顶部）
+                setTimeout(() => {
+                    // 获取第一行诗句的初始位置（屏幕底部外）
+                    const poemLine = poemContent;
+                    const containerHeight = poemContainer.clientHeight;
+                    const poemHeight = poemLine.clientHeight;
+                    
+                    // 从屏幕底部外开始（比屏幕高度多100px）
+                    poemLine.style.transform = `translateY(${containerHeight + 100}px)`;
+                    
+                    // 开始动画
+                    const startTime = performance.now();
+                    const duration = 5000; // 5秒
+                    const animate = () => {
+                        const elapsed = performance.now() - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        // 计算新的y位置（从底部外到顶部）
+                        const newY = containerHeight + 100 - (containerHeight + 100) * progress;
+                        poemLine.style.transform = `translateY(${newY}px)`;
+                        
+                        // 如果动画未完成，继续下一帧
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            // 动画结束，固定在顶部
+                            poemLine.style.transform = 'translateY(0)';
+                        }
+                    };
+                    
+                    requestAnimationFrame(animate);
+                    
+                    // 用户手动滚动时停止动画
+                    poemContainer.addEventListener('scroll', () => {
+                        poemLine.style.transform = 'translateY(0)';
+                        poemContainer.removeEventListener('scroll', arguments.callee);
+                    }, { once: true });
+                }, 500);
+                
+                // 播放音频
+                audio.play().catch(err => {
+                    console.log('音频自动播放失败，点击页面播放:', err);
+                    document.body.addEventListener('click', () => audio.play(), { once: true });
+                });
+            }
         });
 
-    })();
-</script>
-
+        // 旋转屏幕适配（仅保留字体缩放兜底）
+        window.addEventListener('resize', () => {
+            document.documentElement.style.fontSize = '16px !important';
+            document.body.style.webkitTextSizeAdjust = 'none !important';
+        });
+    </script>
 </body>
 </html>
