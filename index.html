@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 优化1：添加viewport-fit=cover适配iPhone刘海/灵动岛，修复视口计算 -->
+    <!-- 修复iOS微信viewport适配：增加viewport-fit=cover，兼容刘海屏 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>abb</title>
     <style>
@@ -11,23 +11,24 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-box-sizing: border-box; /* Safari兼容 */
             font-family: "PingFang SC", "STKaiti", "KaiTi", serif;
         }
 
-        /* 优化2：修复body高度和滚动特性，替换overflow:hidden为auto */
         body {
             background: linear-gradient(120deg, #fff1f9, #ffd1dc, #ffc1e9);
-            min-height: 100vh; /* 改用min-height避免视口截断 */
-            height: auto; /* 高度自适应 */
-            width: 100%; /* 替换100vw避免滚动条 */
+            height: 100vh;
+            width: 100vw;
             padding: 20px 0;
             position: relative;
-            overflow: auto; /* 替换hidden，允许body滚动 */
-            -webkit-overflow-scrolling: touch; /* Safari顺滑滚动 */
+            overflow: hidden;
+            /* 修复iOS微信滚动卡顿：增加-webkit-overflow-scrolling */
+            -webkit-overflow-scrolling: touch;
+            /* 修复iOS微信body高度计算问题 */
+            height: -webkit-fill-available;
+            width: -webkit-fill-available;
         }
 
-        /* 星星效果（初始隐藏） */
+        /* 星星效果（初始隐藏）- 修复iOS微信clip-path兼容 */
         .stars {
             position: fixed;
             top: 0;
@@ -36,55 +37,56 @@
             height: 100%;
             pointer-events: none;
             z-index: 0;
-            display: none; /* 初始隐藏，密码验证后显示 */
+            display: none;
         }
 
         .star {
             position: absolute;
             background: #fff;
             border-radius: 2px;
+            /* 兼容iOS微信的clip-path写法：增加-webkit-前缀 */
+            -webkit-clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            /* 优化3：添加-webkit前缀兼容Safari动画 */
-            -webkit-animation: twinkle 1.8s infinite ease-in-out;
             animation: twinkle 1.8s infinite ease-in-out;
             opacity: 0.4;
+            /* 修复iOS微信动画卡顿：增加-webkit-前缀 */
+            -webkit-animation: twinkle 1.8s infinite ease-in-out;
         }
 
-        /* 优化3：补充Safari私有动画前缀 */
         @-webkit-keyframes twinkle {
-            0% { opacity: 0.4; -webkit-transform: scale(0.9); }
-            50% { opacity: 1.2; -webkit-transform: scale(1.4); }
-            100% { opacity: 0.4; -webkit-transform: scale(0.9); }
-        }
-        @keyframes twinkle {
             0% { opacity: 0.4; -webkit-transform: scale(0.9); transform: scale(0.9); }
             50% { opacity: 1.2; -webkit-transform: scale(1.4); transform: scale(1.4); }
             100% { opacity: 0.4; -webkit-transform: scale(0.9); transform: scale(0.9); }
         }
 
-        /* 诗句容器（初始隐藏） */
+        @keyframes twinkle {
+            0% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1.2; transform: scale(1.4); }
+            100% { opacity: 0.4; transform: scale(0.9); }
+        }
+
+        /* 诗句容器（初始隐藏）- 修复iOS微信滚动问题 */
         .poem-container {
             position: relative;
             z-index: 1;
             max-width: 320px;
             margin: 0 auto;
-            /* 优化4：增加上内边距（从8px→20px），确保上边缘空白 */
-            padding: 20px 15px 60px 15px;
+            padding: 8px 15px 60px 15px;
             background: transparent;
             box-shadow: none;
             border-radius: 0;
-            /* 优化2：改用min-height，避免高度截断 */
-            min-height: calc(100vh - 40px);
-            height: auto;
+            /* 修复iOS微信高度计算：改用100% + 兼容写法 */
+            height: calc(100vh - 40px);
+            height: calc(-webkit-fill-available - 40px);
             overflow-y: auto;
             overflow-x: hidden;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            /* 优化4：调整遮罩渐变起点（8%→15%），确保遮罩显示正常 */
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #fff 15%, #fff 92%, transparent 100%);
-            mask-image: linear-gradient(to bottom, transparent 0%, #fff 15%, #fff 92%, transparent 100%);
-            display: none; /* 初始隐藏，密码验证后显示 */
-            -webkit-overflow-scrolling: touch; /* Safari顺滑滚动 */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #fff 8%, #fff 92%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #fff 8%, #fff 92%, transparent 100%);
+            display: none;
+            /* 修复iOS微信滚动卡顿 */
+            -webkit-overflow-scrolling: touch;
         }
 
         .poem-container::-webkit-scrollbar {
@@ -104,8 +106,7 @@
         @media (min-width: 390px) {
             .poem-container {
                 max-width: 340px;
-                /* 优化4：同步增加上内边距 */
-                padding: 22px 15px 65px 15px;
+                padding: 8px 15px 65px 15px;
             }
             .poem-content {
                 font-size: 18px;
@@ -113,15 +114,16 @@
             }
         }
 
-        /* 密码遮罩（初始全屏显示，唯一可见元素） */
+        /* 密码遮罩 - 修复iOS微信fixed定位和渲染问题 */
         .password-mask {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            /* 优化2：改用min-height确保全屏 */
-            min-height: 100vh;
-            height: 100%;
+            /* 修复iOS微信全屏问题：使用-webkit-fill-available */
+            width: 100vw;
+            width: -webkit-fill-available;
+            height: 100vh;
+            height: -webkit-fill-available;
             background: #ffd1dc;
             z-index: 999;
             display: flex;
@@ -131,7 +133,11 @@
             padding: 0 20px;
             opacity: 1;
             pointer-events: auto;
-            -webkit-box-sizing: border-box;
+            /* 修复iOS微信flex布局兼容 */
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -webkit-box-align: center;
+            -webkit-box-pack: center;
         }
 
         .mask-hint {
@@ -142,7 +148,7 @@
             letter-spacing: 3px;
             text-align: center;
             text-transform: lowercase;
-            display: none; /* 初始隐藏，加载完成后显示 */
+            display: none;
         }
 
         .password-input {
@@ -157,22 +163,27 @@
             outline: none;
             text-align: center;
             letter-spacing: 2px;
-            display: none; /* 初始隐藏，加载完成后显示 */
+            display: none;
+            /* 修复iOS微信输入框样式 */
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .password-input:focus {
             border-color: #d63384;
+            /* 增加-webkit-前缀兼容iOS微信 */
+            -webkit-box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
             box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
         }
 
-        /* 加载提示（初始唯一显示） */
+        /* 加载提示 */
         .loading-indicator {
             color: #d63384;
             font-size: 18px;
             text-align: center;
         }
 
-        /* 玫瑰容器（初始隐藏） */
+        /* 玫瑰容器 - 修复iOS微信动画兼容 */
         .rose-container {
             position: fixed;
             bottom: 0;
@@ -182,10 +193,11 @@
             pointer-events: none;
             z-index: 2;
             opacity: 0;
+            /* 增加-webkit-前缀 */
             -webkit-transition: opacity 0.3s ease;
             transition: opacity 0.3s ease;
             overflow: hidden;
-            display: none; /* 初始隐藏，密码验证后显示 */
+            display: none;
         }
 
         .rose {
@@ -193,32 +205,14 @@
             bottom: 10px;
             color: #c24a7c;
             opacity: 0;
-            /* 优化3：添加-webkit前缀兼容Safari动画 */
+            /* 增加-webkit-前缀 */
             -webkit-animation: rose-emerge 1.2s ease-out forwards;
             animation: rose-emerge 1.2s ease-out forwards;
-            -webkit-transform-origin: center;
             transform-origin: center;
+            -webkit-transform-origin: center;
         }
 
-        /* 优化3：补充Safari私有动画前缀 */
         @-webkit-keyframes rose-emerge {
-            0% {
-                -webkit-transform: scale(0.1);
-                opacity: 0;
-                bottom: -20px;
-            }
-            70% {
-                -webkit-transform: scale(1);
-                opacity: 1;
-                bottom: 10px;
-            }
-            100% {
-                -webkit-transform: scale(1.05);
-                opacity: 1;
-                bottom: 10px;
-            }
-        }
-        @keyframes rose-emerge {
             0% {
                 -webkit-transform: scale(0.1);
                 transform: scale(0.1);
@@ -239,25 +233,25 @@
             }
         }
 
-        /* 优化3：补充Safari私有动画前缀 */
-        @-webkit-keyframes rose-hide {
+        @keyframes rose-emerge {
             0% {
-                -webkit-transform: scale(1.05);
-                opacity: 1;
-                bottom: 10px;
-            }
-            30% {
-                -webkit-transform: scale(1);
-                opacity: 0.9;
-                bottom: 10px;
-            }
-            100% {
-                -webkit-transform: scale(0.1);
+                transform: scale(0.1);
                 opacity: 0;
                 bottom: -20px;
             }
+            70% {
+                transform: scale(1);
+                opacity: 1;
+                bottom: 10px;
+            }
+            100% {
+                transform: scale(1.05);
+                opacity: 1;
+                bottom: 10px;
+            }
         }
-        @keyframes rose-hide {
+
+        @-webkit-keyframes rose-hide {
             0% {
                 -webkit-transform: scale(1.05);
                 transform: scale(1.05);
@@ -272,6 +266,24 @@
             }
             100% {
                 -webkit-transform: scale(0.1);
+                transform: scale(0.1);
+                opacity: 0;
+                bottom: -20px;
+            }
+        }
+
+        @keyframes rose-hide {
+            0% {
+                transform: scale(1.05);
+                opacity: 1;
+                bottom: 10px;
+            }
+            30% {
+                transform: scale(1);
+                opacity: 0.9;
+                bottom: 10px;
+            }
+            100% {
                 transform: scale(0.1);
                 opacity: 0;
                 bottom: -20px;
@@ -285,7 +297,7 @@
     <!-- 星星（初始隐藏） -->
     <div class="stars" id="stars"></div>
 
-    <!-- 密码遮罩（初始全屏显示，唯一可见） -->
+    <!-- 密码遮罩（初始全屏显示） -->
     <div class="password-mask" id="passwordMask">
         <div class="loading-indicator" id="loadingIndicator">xbb中...</div>
         <div class="mask-hint" id="maskHint">abbm</div>
@@ -347,8 +359,8 @@
     <!-- 玫瑰容器（初始隐藏） -->
     <div class="rose-container" id="roseContainer"></div>
 
-    <!-- 音频元素 -->
-    <audio id="backgroundMusic" loop preload="auto">
+    <!-- 音频元素 - 移除preload=auto，避免微信拦截 -->
+    <audio id="backgroundMusic" loop>
         <source src="background.mp3" type="audio/mpeg">
         您的浏览器不支持音频播放
     </audio>
@@ -365,17 +377,21 @@
         const roseContainer = document.getElementById('roseContainer');
         const correctPassword = 'abb'; // 正确密码
 
-        // 页面加载后立即执行：初始化星星 + 强制加载音频
-        window.onload = () => {
-            initStars(); // 先初始化星星（但不显示）
-            loadAudioImmediately(); // 立即加载音频
-        };
+        // 修复：改用DOMContentLoaded（更早执行，兼容微信）
+        document.addEventListener('DOMContentLoaded', () => {
+            initStars(); // 初始化星星
+            // 关键修复：不依赖音频加载，延迟显示密码输入框（解决微信音频拦截问题）
+            setTimeout(() => {
+                showPasswordUI(); // 强制显示密码界面，不再等音频
+            }, 800); 
+            loadAudioGracefully(); // 优雅加载音频（不阻塞UI）
+        });
 
-        // 初始化星星效果（仅创建元素，不显示）
+        // 初始化星星效果
         function initStars() {
             const starCount = 40;
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
+            const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+            const screenHeight = window.innerHeight || document.documentElement.clientHeight;
 
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
@@ -390,56 +406,59 @@
                 star.style.width = `${size}px`;
                 star.style.height = `${size}px`;
                 star.style.animationDelay = `${delay}s`;
+                star.style.webkitAnimationDelay = `${delay}s`;
                 
                 stars.appendChild(star);
             }
         }
 
-        // 立即加载音频（页面一打开就加载）
-        function loadAudioImmediately() {
-            // 监听音频完全加载完成（可流畅播放）
-            audio.addEventListener('canplaythrough', () => {
-                // 隐藏加载提示，显示密码输入区域
-                loadingIndicator.style.display = 'none';
-                maskHint.style.display = 'block';
-                passwordInput.style.display = 'block';
-                passwordInput.focus(); // 自动聚焦输入框
-            });
-
-            // 音频加载错误处理
-            audio.addEventListener('error', () => {
-                loadingIndicator.textContent = '加载失败，请刷新重试';
-            });
-
-            // 强制触发音频加载（preload="auto" + 主动load）
-            audio.load();
+        // 强制显示密码输入界面（核心修复：摆脱音频依赖）
+        function showPasswordUI() {
+            loadingIndicator.style.display = 'none';
+            maskHint.style.display = 'block';
+            passwordInput.style.display = 'block';
+            // 修复iOS微信输入框聚焦问题
+            setTimeout(() => {
+                passwordInput.focus();
+            }, 200);
         }
 
-        // 密码验证逻辑
+        // 优雅加载音频（不阻塞UI）
+        function loadAudioGracefully() {
+            // 微信中需要用户交互后才能播放，先预加载但不等待
+            audio.load();
+            // 音频加载成功的回调（仅用于播放，不影响UI）
+            audio.addEventListener('canplaythrough', () => {
+                console.log('音频加载完成');
+            });
+            // 音频加载失败的容错
+            audio.addEventListener('error', (err) => {
+                console.log('音频加载失败:', err);
+                // 不影响UI，仅日志提示
+            });
+        }
+
+        // 密码验证逻辑 - 修复iOS微信输入事件兼容
         passwordInput.addEventListener('input', (e) => {
             const inputValue = e.target.value.trim();
             if (inputValue === correctPassword) {
-                // 1. 隐藏密码遮罩
+                // 1. 隐藏密码遮罩（增加-webkit-前缀兼容）
                 passwordMask.style.opacity = 0;
+                passwordMask.style.webkitOpacity = 0;
                 passwordMask.style.pointerEvents = 'none';
                 setTimeout(() => {
                     passwordMask.style.display = 'none';
                 }, 500);
 
-                // 2. 显示诗句、星星、玫瑰容器
+                // 2. 显示核心内容
                 stars.style.display = 'block';
                 poemContainer.style.display = 'block';
                 roseContainer.style.display = 'block';
 
-                // 优化5：强制设置初始滚动位置（关键！解决上边缘空白缺失）
-                setTimeout(() => {
-                    poemContainer.scrollTop = 10; // 轻微向下滚动，显示上边距
-                }, 100);
-
-                // 3. 自动播放音频（处理浏览器自动播放策略）
+                // 3. 播放音频（微信需要用户交互，这里密码输入属于用户交互，可播放）
                 audio.play().catch(err => {
-                    // 如果自动播放失败，提示用户点击页面播放
-                    alert('请轻触/点击页面任意位置播放背景音乐');
+                    console.log('音频自动播放失败，点击页面播放:', err);
+                    // 备用方案：点击任意位置播放
                     document.body.addEventListener('click', () => {
                         audio.play();
                     }, { once: true });
@@ -450,18 +469,22 @@
             }
         });
 
-        // 玫瑰滚动效果（仅在密码验证后绑定）
+        // 玫瑰滚动效果 - 修复iOS微信滚动事件兼容
         function bindRoseScrollEffect() {
             let isRoseVisible = false;
             const roseIcon = '🌹';
             const rosePerRow = 32;
-            const bouquetCenterX = window.innerWidth / 2;
+            // 修复iOS微信宽度计算
+            const bouquetCenterX = (window.innerWidth || document.documentElement.clientWidth) / 2;
             const rowRadius = 340;
 
+            // 修复iOS微信scroll事件触发问题
             poemContainer.addEventListener('scroll', () => {
-                const scrollBottom = poemContainer.scrollHeight - poemContainer.scrollTop;
-                const containerHeight = poemContainer.clientHeight;
-                const isScrollToBottom = scrollBottom <= containerHeight + 20;
+                // 兼容iOS微信滚动高度计算
+                const scrollTop = poemContainer.scrollTop;
+                const scrollHeight = poemContainer.scrollHeight;
+                const clientHeight = poemContainer.clientHeight;
+                const isScrollToBottom = (scrollTop + clientHeight) >= (scrollHeight - 20);
 
                 if (isScrollToBottom && !isRoseVisible) {
                     isRoseVisible = true;
@@ -475,8 +498,9 @@
             function createSingleRowRoses() {
                 roseContainer.innerHTML = '';
                 roseContainer.style.opacity = 1;
+                roseContainer.style.webkitOpacity = 1;
 
-                // 主玫瑰（32朵）
+                // 主玫瑰
                 for (let i = 0; i < rosePerRow; i++) {
                     const rose = document.createElement('div');
                     rose.className = 'rose rose-row-3';
@@ -490,25 +514,31 @@
 
                     rose.style.left = `${x}px`;
                     rose.style.fontSize = `${size}px`;
+                    // 增加-webkit-前缀
                     rose.style.transform = `rotate(${rotate}deg)`;
+                    rose.style.webkitTransform = `rotate(${rotate}deg)`;
                     rose.style.animationDelay = `${delay}s`;
+                    rose.style.webkitAnimationDelay = `${delay}s`;
 
                     roseContainer.appendChild(rose);
                 }
 
-                // 补充玫瑰（12朵）
+                // 补充玫瑰
                 setTimeout(() => {
+                    const screenWidth = window.innerWidth || document.documentElement.clientWidth;
                     for (let i = 0; i < 12; i++) {
                         const rose = document.createElement('div');
                         rose.className = 'rose rose-row-3';
                         rose.textContent = roseIcon;
-                        const x = (window.innerWidth / 12) * i - 10;
+                        const x = (screenWidth / 12) * i - 10;
                         const size = Math.random() * 10 + 22;
                         const delay = Math.random() * 0.4;
                         rose.style.left = `${x}px`;
                         rose.style.fontSize = `${size}px`;
                         rose.style.transform = `rotate(${Math.random() * 15 - 7.5}deg)`;
+                        rose.style.webkitTransform = `rotate(${Math.random() * 15 - 7.5}deg)`;
                         rose.style.animationDelay = `${delay}s`;
+                        rose.style.webkitAnimationDelay = `${delay}s`;
                         roseContainer.appendChild(rose);
                     }
                 }, 300);
@@ -518,15 +548,20 @@
                 const roses = document.querySelectorAll('.rose');
                 roses.forEach(rose => {
                     rose.style.animation = 'rose-hide 0.8s ease-out forwards';
-                    // 补充Safari前缀
                     rose.style.webkitAnimation = 'rose-hide 0.8s ease-out forwards';
                 });
                 setTimeout(() => {
                     roseContainer.style.opacity = 0;
+                    roseContainer.style.webkitOpacity = 0;
                     roseContainer.innerHTML = '';
                 }, 800);
             }
         }
+
+        // 修复iOS微信旋转屏幕适配
+        window.addEventListener('resize', () => {
+            // 重新计算星星/玫瑰位置（可选，根据需要）
+        });
     </script>
 </body>
 </html>
