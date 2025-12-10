@@ -26,7 +26,6 @@
             background: linear-gradient(120deg, #fff1f9, #ffd1dc, #ffc1e9);
             height: 100vh;
             width: 100vw;
-            padding: 20px 0;
             position: relative;
             overflow: hidden;
             -webkit-overflow-scrolling: touch;
@@ -71,13 +70,14 @@
             100% { opacity: 0.4; transform: scale(0.9); }
         }
 
-        /* 诗句容器 - 完全移除所有遮罩，仅保留滚动基础样式 */
+        /* 诗句容器 - 无任何遮罩，仅保留滚动和边距 */
         .poem-container {
             position: relative;
-            z-index: 1;
+            z-index: 2; /* 文字层高于星星/玫瑰，顶层显示 */
             max-width: 320px;
             margin: 0 auto;
-            padding: 8px 15px 60px 15px;
+            /* 上下边距：避免玫瑰遮挡，顶部20px，底部80px（玫瑰在最底部） */
+            padding: 20px 15px 80px 15px;
             background: transparent;
             height: 100vh;
             max-height: -webkit-fill-available;
@@ -87,12 +87,12 @@
             -ms-overflow-style: none;
             display: none;
             -webkit-overflow-scrolling: touch;
-            /* 初始状态：从屏幕底部完全隐藏 */
+            /* 初始状态：文字在屏幕底部（不是容器底部） */
             opacity: 0;
-            transform: translateY(100%);
-            -webkit-transform: translateY(100%);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-            -webkit-transition: opacity 0.8s ease, -webkit-transform 0.8s ease;
+            transform: translateY(100vh);
+            -webkit-transform: translateY(100vh);
+            transition: opacity 0.8s ease;
+            -webkit-transition: opacity 0.8s ease;
         }
 
         .poem-container.show {
@@ -105,7 +105,7 @@
             display: none;
         }
 
-        /* 诗句文字 - 完全移除mask遮罩，无任何渐变/遮罩效果 */
+        /* 诗句文字 - 纯文字顶层显示，无任何遮罩/渐变 */
         .poem-content {
             color: #4a3246;
             font-size: 16px !important;
@@ -113,15 +113,14 @@
             text-align: left;
             white-space: pre-line;
             font-weight: 400;
-            margin-top: 3px;
             position: relative;
-            z-index: 1;
+            z-index: 3; /* 文字自身最高层 */
         }
 
         @media (min-width: 390px) {
             .poem-container {
                 max-width: 340px;
-                padding: 8px 15px 65px 15px;
+                padding: 20px 15px 80px 15px;
             }
             .poem-content {
                 font-size: 18px !important;
@@ -129,7 +128,7 @@
             }
         }
 
-        /* 密码遮罩（仅登录页，诗句页无遮罩） */
+        /* 密码遮罩（仅登录页） */
         .password-mask {
             position: fixed;
             top: 0;
@@ -147,10 +146,6 @@
             padding: 0 20px;
             opacity: 1;
             pointer-events: auto;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-box-align: center;
-            -webkit-box-pack: center;
         }
 
         .mask-hint {
@@ -183,8 +178,8 @@
 
         .password-input:focus {
             border-color: #d63384;
-            -webkit-box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
             box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
+            -webkit-box-shadow: 0 0 15px rgba(214, 51, 132, 0.3);
         }
 
         /* 加载提示 */
@@ -194,18 +189,18 @@
             text-align: center;
         }
 
-        /* 玫瑰容器 */
+        /* 玫瑰容器 - 固定在最底部，层级低于文字 */
         .rose-container {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 50px;
+            height: 50px; /* 玫瑰高度，不超过文字底部边距 */
             pointer-events: none;
-            z-index: 2;
+            z-index: 1; /* 低于文字层z-index:2 */
             opacity: 0;
-            -webkit-transition: opacity 0.3s ease;
             transition: opacity 0.3s ease;
+            -webkit-transition: opacity 0.3s ease;
             overflow: hidden;
             display: none;
         }
@@ -382,11 +377,11 @@
         const roseContainer = document.getElementById('roseContainer');
         const correctPassword = 'abb';
 
-        // 自动滚动核心变量（修改为非平滑、超慢速）
-        let autoScrollTimer = null; // 改为定时器对象
+        // 自动滚动核心配置（歌词式极慢滚动）
+        let autoScrollTimer = null;
         let isAutoScrolling = false;
-        const scrollSpeed = 0.1; // 超慢速（像素/100ms），数值越小越慢
-        const scrollInterval = 100; // 滚动间隔（毫秒），越大越不平滑
+        const targetScrollTime = 5000; // 第一行滑到顶部的时间：5秒（5000ms）
+        let scrollSpeedPerFrame = 0; // 每帧滚动速度（动态计算）
 
         // 页面加载完成初始化
         document.addEventListener('DOMContentLoaded', () => {
@@ -455,10 +450,14 @@
                 stars.style.display = 'block';
                 poemContainer.style.display = 'block';
                 
-                // 等待诗句淡出动画完成后，启动自动滚动
+                // 等待文字淡入完成后，初始化并启动极慢滚动
                 setTimeout(() => {
                     poemContainer.classList.add('show');
-                    setTimeout(startAutoScroll, 300);
+                    // 强制重绘后计算滚动速度
+                    setTimeout(() => {
+                        calculateScrollSpeed();
+                        startAutoScroll();
+                    }, 300);
                 }, 300);
 
                 roseContainer.style.display = 'block';
@@ -475,33 +474,47 @@
             }
         });
 
-        // 核心：启动超慢速非平滑自动滚动
+        // 计算滚动速度：5秒让第一行滑到顶部
+        function calculateScrollSpeed() {
+            // 获取容器可视高度（第一行需要滚动的距离 = 容器高度）
+            const containerHeight = poemContainer.clientHeight;
+            // 计算每帧（16ms）需要滚动的距离：总距离 / (总时间/每帧时间)
+            const frameRate = 16; // 浏览器平均帧间隔（ms）
+            const totalFrames = targetScrollTime / frameRate;
+            scrollSpeedPerFrame = containerHeight / totalFrames;
+        }
+
+        // 核心：启动歌词式极慢自动滚动
         function startAutoScroll() {
             if (isAutoScrolling) return;
             isAutoScrolling = true;
 
-            // 改用setInterval实现非平滑、超慢速滚动（替代requestAnimationFrame）
-            autoScrollTimer = setInterval(() => {
+            function scrollStep() {
                 // 计算滚动状态：是否到底部
                 const scrollTop = poemContainer.scrollTop;
                 const clientHeight = poemContainer.clientHeight;
                 const scrollHeight = poemContainer.scrollHeight;
-                const isAtBottom = Math.abs(scrollTop + clientHeight - scrollHeight) <= 0;
+                const isAtBottom = Math.abs(scrollTop + clientHeight - scrollHeight) <= 1;
 
                 if (isAtBottom) {
                     stopAutoScroll(); // 滚到底部停止
                     return;
                 }
 
-                // 非平滑向上滚动（每次固定移动极小距离）
-                poemContainer.scrollTop += scrollSpeed;
-            }, scrollInterval);
+                // 极慢匀速滚动（歌词效果）
+                poemContainer.scrollTop += scrollSpeedPerFrame;
+                // 持续执行直到停止
+                autoScrollTimer = requestAnimationFrame(scrollStep);
+            }
+
+            // 启动滚动循环
+            autoScrollTimer = requestAnimationFrame(scrollStep);
         }
 
-        // 停止自动滚动（清除定时器）
+        // 停止自动滚动
         function stopAutoScroll() {
             if (!isAutoScrolling) return;
-            clearInterval(autoScrollTimer); // 替换为清除定时器
+            cancelAnimationFrame(autoScrollTimer);
             isAutoScrolling = false;
         }
 
@@ -605,6 +618,12 @@
         window.addEventListener('resize', () => {
             document.documentElement.style.fontSize = '16px !important';
             document.body.style.webkitTextSizeAdjust = 'none !important';
+            // 窗口变化重新计算滚动速度
+            if (isAutoScrolling) {
+                stopAutoScroll();
+                calculateScrollSpeed();
+                startAutoScroll();
+            }
         });
     </script>
 </body>
