@@ -72,126 +72,36 @@
             100% { opacity: 0.4; transform: scale(0.9); }
         }
 
-        /* 玫瑰emoji样式 - 底部铺满页面宽度，从下向上淡出（数量翻倍至40个） */
-        .rose-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: auto;
-            display: flex;
-            justify-content: space-between; /* 铺满整个宽度 */
-            align-items: flex-end;
-            z-index: 1; /* 低于诗句，高于星星 */
+        /* 诗句末尾玫瑰emoji样式 - 初始隐藏，滑到底部才淡入 */
+        .poem-rose {
             opacity: 0;
-            transform: translateY(20px); /* 初始在屏幕下方 */
+            transform: translateX(5px);
+            -webkit-transform: translateX(5px);
+            /* 淡入过渡效果 */
             transition: 
                 opacity 1.5s ease-out,
-                transform 1.5s ease-out; /* 淡入+上移动画 */
+                transform 1.5s ease-out;
             -webkit-transition: 
                 opacity 1.5s ease-out,
                 -webkit-transform 1.5s ease-out;
-            pointer-events: none; /* 不影响滚动/点击 */
-            padding: 20px 15px; /* 左右内边距和诗句容器一致 */
-            flex-wrap: nowrap; /* 不换行，保证横向铺满 */
-        }
-
-        .rose-container.show {
-            opacity: 1; /* 淡入显示 */
-            transform: translateY(0); /* 上移到显示位置 */
-            -webkit-transform: translateY(0);
-        }
-
-        /* 玫瑰emoji大小错落 + 适配铺满宽度（40个玫瑰） */
-        .rose-emoji {
-            flex-shrink: 0;
+            /* 玫瑰大小适配 */
+            font-size: inherit !important;
             line-height: 1;
-            margin: 0 2px; /* 微小间距，保证铺满 */
+            margin-left: 4px;
         }
-        /* 40个玫瑰大小错落配置 */
-        .rose-emoji:nth-child(1) { font-size: 18px !important; }
-        .rose-emoji:nth-child(2) { font-size: 22px !important; }
-        .rose-emoji:nth-child(3) { font-size: 20px !important; }
-        .rose-emoji:nth-child(4) { font-size: 24px !important; }
-        .rose-emoji:nth-child(5) { font-size: 19px !important; }
-        .rose-emoji:nth-child(6) { font-size: 23px !important; }
-        .rose-emoji:nth-child(7) { font-size: 21px !important; }
-        .rose-emoji:nth-child(8) { font-size: 25px !important; }
-        .rose-emoji:nth-child(9) { font-size: 17px !important; }
-        .rose-emoji:nth-child(10) { font-size: 20px !important; }
-        .rose-emoji:nth-child(11) { font-size: 22px !important; }
-        .rose-emoji:nth-child(12) { font-size: 19px !important; }
-        .rose-emoji:nth-child(13) { font-size: 24px !important; }
-        .rose-emoji:nth-child(14) { font-size: 20px !important; }
-        .rose-emoji:nth-child(15) { font-size: 23px !important; }
-        .rose-emoji:nth-child(16) { font-size: 21px !important; }
-        .rose-emoji:nth-child(17) { font-size: 18px !important; }
-        .rose-emoji:nth-child(18) { font-size: 22px !important; }
-        .rose-emoji:nth-child(19) { font-size: 24px !important; }
-        .rose-emoji:nth-child(20) { font-size: 20px !important; }
-        .rose-emoji:nth-child(21) { font-size: 21px !important; }
-        .rose-emoji:nth-child(22) { font-size: 23px !important; }
-        .rose-emoji:nth-child(23) { font-size: 19px !important; }
-        .rose-emoji:nth-child(24) { font-size: 25px !important; }
-        .rose-emoji:nth-child(25) { font-size: 18px !important; }
-        .rose-emoji:nth-child(26) { font-size: 22px !important; }
-        .rose-emoji:nth-child(27) { font-size: 20px !important; }
-        .rose-emoji:nth-child(28) { font-size: 24px !important; }
-        .rose-emoji:nth-child(29) { font-size: 17px !important; }
-        .rose-emoji:nth-child(30) { font-size: 21px !important; }
-        .rose-emoji:nth-child(31) { font-size: 23px !important; }
-        .rose-emoji:nth-child(32) { font-size: 19px !important; }
-        .rose-emoji:nth-child(33) { font-size: 20px !important; }
-        .rose-emoji:nth-child(34) { font-size: 24px !important; }
-        .rose-emoji:nth-child(35) { font-size: 18px !important; }
-        .rose-emoji:nth-child(36) { font-size: 22px !important; }
-        .rose-emoji:nth-child(37) { font-size: 21px !important; }
-        .rose-emoji:nth-child(38) { font-size: 25px !important; }
-        .rose-emoji:nth-child(39) { font-size: 19px !important; }
-        .rose-emoji:nth-child(40) { font-size: 23px !important; }
 
-        /* 媒体查询适配大屏玫瑰大小 */
+        /* 玫瑰激活显示状态 */
+        .poem-rose.active {
+            opacity: 1;
+            transform: translateX(0);
+            -webkit-transform: translateX(0);
+        }
+
+        /* 大屏玫瑰大小适配 */
         @media (min-width: 390px) {
-            .rose-emoji:nth-child(1) { font-size: 20px !important; }
-            .rose-emoji:nth-child(2) { font-size: 24px !important; }
-            .rose-emoji:nth-child(3) { font-size: 22px !important; }
-            .rose-emoji:nth-child(4) { font-size: 26px !important; }
-            .rose-emoji:nth-child(5) { font-size: 21px !important; }
-            .rose-emoji:nth-child(6) { font-size: 25px !important; }
-            .rose-emoji:nth-child(7) { font-size: 23px !important; }
-            .rose-emoji:nth-child(8) { font-size: 27px !important; }
-            .rose-emoji:nth-child(9) { font-size: 19px !important; }
-            .rose-emoji:nth-child(10) { font-size: 22px !important; }
-            .rose-emoji:nth-child(11) { font-size: 24px !important; }
-            .rose-emoji:nth-child(12) { font-size: 21px !important; }
-            .rose-emoji:nth-child(13) { font-size: 26px !important; }
-            .rose-emoji:nth-child(14) { font-size: 22px !important; }
-            .rose-emoji:nth-child(15) { font-size: 25px !important; }
-            .rose-emoji:nth-child(16) { font-size: 23px !important; }
-            .rose-emoji:nth-child(17) { font-size: 20px !important; }
-            .rose-emoji:nth-child(18) { font-size: 24px !important; }
-            .rose-emoji:nth-child(19) { font-size: 26px !important; }
-            .rose-emoji:nth-child(20) { font-size: 22px !important; }
-            .rose-emoji:nth-child(21) { font-size: 23px !important; }
-            .rose-emoji:nth-child(22) { font-size: 25px !important; }
-            .rose-emoji:nth-child(23) { font-size: 21px !important; }
-            .rose-emoji:nth-child(24) { font-size: 27px !important; }
-            .rose-emoji:nth-child(25) { font-size: 20px !important; }
-            .rose-emoji:nth-child(26) { font-size: 24px !important; }
-            .rose-emoji:nth-child(27) { font-size: 22px !important; }
-            .rose-emoji:nth-child(28) { font-size: 26px !important; }
-            .rose-emoji:nth-child(29) { font-size: 19px !important; }
-            .rose-emoji:nth-child(30) { font-size: 23px !important; }
-            .rose-emoji:nth-child(31) { font-size: 25px !important; }
-            .rose-emoji:nth-child(32) { font-size: 21px !important; }
-            .rose-emoji:nth-child(33) { font-size: 22px !important; }
-            .rose-emoji:nth-child(34) { font-size: 26px !important; }
-            .rose-emoji:nth-child(35) { font-size: 20px !important; }
-            .rose-emoji:nth-child(36) { font-size: 24px !important; }
-            .rose-emoji:nth-child(37) { font-size: 23px !important; }
-            .rose-emoji:nth-child(38) { font-size: 27px !important; }
-            .rose-emoji:nth-child(39) { font-size: 21px !important; }
-            .rose-emoji:nth-child(40) { font-size: 25px !important; }
+            .poem-rose {
+                font-size: 20px !important;
+            }
         }
 
         /* 诗句容器 - 上下无间距，正常显示 */
@@ -350,51 +260,6 @@
 <body>
     <div class="stars" id="stars"></div>
 
-    <!-- 玫瑰emoji容器 - 40个玫瑰（数量翻倍） -->
-    <div class="rose-container" id="roseContainer">
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-        <span class="rose-emoji">🌹</span>
-    </div>
-
     <div class="password-mask" id="passwordMask">
         <!-- 加载提示 + 横向进度条 -->
         <div class="loading-indicator" id="loadingIndicator">
@@ -454,7 +319,7 @@
 风里的味道依然是当初那般清甜
 又想回到天街河边，重温相遇的心动瞬间，拾起过往碎碎片段
 只是这一次，想停在婚姻登记处前
-和你一起推开那扇门，携手相依，直到永远
+和你一起推开那扇门，携手相依，直到永远<span class="poem-rose">🌹</span>
         </div>
     </div>
 
@@ -475,7 +340,7 @@
         const poemContent = document.getElementById('poemContent');
         const correctPassword = 'abb'; // 密码大小写均可
         // 玫瑰元素
-        const roseContainer = document.getElementById('roseContainer');
+        const poemRose = document.querySelector('.poem-rose');
 
         // 横向进度条元素
         const horizontalProgressFill = document.getElementById('horizontalProgressFill');
@@ -485,13 +350,13 @@
         let isAnimating = false; 
         let animationFrameId = null; 
         let progressInterval = null; // 进度条动画定时器
-        let isRoseShowed = false; // 玫瑰是否已显示（避免重复触发）
+        let isRoseShowed = false; // 标记玫瑰是否已显示
 
         // 缓动函数：easeOutCubic
         const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
-        // 防抖函数：避免滚动频繁触发判断
-        const debounce = (fn, delay) => {
+        // 防抖函数：避免滚动频繁触发判断（优化iPhone微信性能）
+        const debounce = (fn, delay = 100) => {
             let timer = null;
             return function(...args) {
                 if (timer) clearTimeout(timer);
@@ -630,26 +495,25 @@
             }, 300);
         }
 
-        // 判断是否滚动到诗句末尾（最后一行+底部边距露出）
-        function checkScrollToEnd() {
-            if (isRoseShowed) return; // 已显示玫瑰，不再判断
-
+        // 检测是否滚动到诗句最底部
+        function checkScrollToBottom() {
+            if (isRoseShowed) return; // 玫瑰已显示，不再检测
+            
             const { scrollTop, clientHeight, scrollHeight } = poemContainer;
-            const bottomMargin = parseFloat(getComputedStyle(poemContent).marginBottom) || 0;
-            // 10px容错，确保最后一行+底部边距完全露出
-            const isAtEnd = scrollTop + clientHeight >= scrollHeight - bottomMargin - 10;
-
-            if (isAtEnd) {
+            // 计算滚动到底部的阈值（10px容错）
+            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
+            
+            if (isAtBottom) {
                 isRoseShowed = true;
-                // 移除延迟，立即显示玫瑰（自动淡出动画）
-                roseContainer.classList.add('show');
+                // 激活玫瑰淡入显示
+                poemRose.classList.add('active');
                 // 移除滚动监听，避免重复触发
                 poemContainer.removeEventListener('scroll', debouncedCheckScroll);
             }
         }
 
-        // 防抖后的滚动监听（200ms延迟，避免频繁触发）
-        const debouncedCheckScroll = debounce(checkScrollToEnd, 200);
+        // 防抖后的滚动检测函数
+        const debouncedCheckScroll = debounce(checkScrollToBottom);
 
         // 解析transform的Y偏移值
         function getTransformY(element) {
@@ -701,7 +565,7 @@
             poemContainer.addEventListener('scroll', stopPoemAnimation, { once: true, passive: true });
             poemContainer.addEventListener('mousedown', stopPoemAnimation, { once: true, passive: true });
 
-            // 绑定滚动监听，判断是否到末尾显示玫瑰
+            // 绑定滚动监听，检测是否滑到底部显示玫瑰
             poemContainer.addEventListener('scroll', debouncedCheckScroll, { passive: true });
 
             const animate = () => {
