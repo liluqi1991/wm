@@ -70,41 +70,65 @@
             100% { opacity: 0.4; transform: scale(0.9); }
         }
 
-        /* 玫瑰emoji样式 - 左右垂直排列，淡入效果 */
+        /* 玫瑰emoji样式 - 底部铺满+叠加遮挡+无空隙 */
         .rose-container {
             position: fixed;
-            top: 0;
-            height: 100vh;
-            height: -webkit-fill-available;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
             display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
+            justify-content: flex-start; /* 从左到右铺满 */
+            align-items: flex-end;
             z-index: 1; /* 低于诗句，高于星星 */
             opacity: 0;
-            transition: opacity 1.2s ease-out; /* 淡入淡出过渡 */
-            -webkit-transition: opacity 1.2s ease-out;
+            transform: translateY(20px); /* 初始在屏幕下方 */
+            transition: 
+                opacity 1.5s ease-out,
+                transform 1.5s ease-out; /* 淡入+上移动画 */
+            -webkit-transition: 
+                opacity 1.5s ease-out,
+                -webkit-transform 1.5s ease-out;
             pointer-events: none; /* 不影响滚动/点击 */
-        }
-
-        .rose-left {
-            left: 15px; /* 与诗句容器左右内边距一致 */
-        }
-
-        .rose-right {
-            right: 15px;
+            padding: 15px 0; /* 底边内边距，贴紧底部 */
+            overflow: hidden; /* 防止玫瑰溢出屏幕 */
         }
 
         .rose-container.show {
             opacity: 1; /* 淡入显示 */
+            transform: translateY(0); /* 上移到显示位置 */
+            -webkit-transform: translateY(0);
         }
 
+        /* 玫瑰emoji - 叠加遮挡+无空隙+大小错落 */
         .rose-emoji {
-            font-size: 20px !important;
-            line-height: 1.5;
-            /* 适配不同屏幕高度，自动调整间距 */
-            flex-shrink: 0;
+            flex-shrink: 0; /* 不收缩，保证大小 */
+            line-height: 1;
+            margin: 0 -6px; /* 负值margin实现叠加遮挡，消除空隙 */
+            position: relative; /* 层级叠加 */
+            z-index: 1; /* 基础层级 */
         }
+        /* 大小错落+层级交错，增强叠加感 */
+        .rose-emoji:nth-child(1) { font-size: 18px !important; z-index: 3; }
+        .rose-emoji:nth-child(2) { font-size: 22px !important; z-index: 1; }
+        .rose-emoji:nth-child(3) { font-size: 20px !important; z-index: 4; }
+        .rose-emoji:nth-child(4) { font-size: 24px !important; z-index: 2; }
+        .rose-emoji:nth-child(5) { font-size: 19px !important; z-index: 5; }
+        .rose-emoji:nth-child(6) { font-size: 23px !important; z-index: 1; }
+        .rose-emoji:nth-child(7) { font-size: 21px !important; z-index: 6; }
+        .rose-emoji:nth-child(8) { font-size: 25px !important; z-index: 3; }
+        .rose-emoji:nth-child(9) { font-size: 17px !important; z-index: 7; }
+        .rose-emoji:nth-child(10) { font-size: 20px !important; z-index: 2; }
+        .rose-emoji:nth-child(11) { font-size: 22px !important; z-index: 8; }
+        .rose-emoji:nth-child(12) { font-size: 19px !important; z-index: 4; }
+        .rose-emoji:nth-child(13) { font-size: 24px !important; z-index: 1; }
+        .rose-emoji:nth-child(14) { font-size: 20px !important; z-index: 9; }
+        .rose-emoji:nth-child(15) { font-size: 23px !important; z-index: 5; }
+        .rose-emoji:nth-child(16) { font-size: 21px !important; z-index: 3; }
+        .rose-emoji:nth-child(17) { font-size: 18px !important; z-index: 10; }
+        .rose-emoji:nth-child(18) { font-size: 22px !important; z-index: 2; }
+        .rose-emoji:nth-child(19) { font-size: 24px !important; z-index: 6; }
+        .rose-emoji:nth-child(20) { font-size: 20px !important; z-index: 4; }
 
         /* 诗句容器 - 上下无间距，正常显示 */
         .poem-container {
@@ -166,9 +190,30 @@
                 margin-top: 45px;
                 margin-bottom: 90px; /* 45*2=90，两个行距 */
             }
+            /* 大屏玫瑰稍大，保持叠加效果 */
             .rose-emoji {
-                font-size: 22px !important; /* 大屏玫瑰稍大 */
+                margin: 0 -7px !important;
             }
+            .rose-emoji:nth-child(1) { font-size: 20px !important; }
+            .rose-emoji:nth-child(2) { font-size: 24px !important; }
+            .rose-emoji:nth-child(3) { font-size: 22px !important; }
+            .rose-emoji:nth-child(4) { font-size: 26px !important; }
+            .rose-emoji:nth-child(5) { font-size: 21px !important; }
+            .rose-emoji:nth-child(6) { font-size: 25px !important; }
+            .rose-emoji:nth-child(7) { font-size: 23px !important; }
+            .rose-emoji:nth-child(8) { font-size: 27px !important; }
+            .rose-emoji:nth-child(9) { font-size: 19px !important; }
+            .rose-emoji:nth-child(10) { font-size: 22px !important; }
+            .rose-emoji:nth-child(11) { font-size: 24px !important; }
+            .rose-emoji:nth-child(12) { font-size: 21px !important; }
+            .rose-emoji:nth-child(13) { font-size: 26px !important; }
+            .rose-emoji:nth-child(14) { font-size: 22px !important; }
+            .rose-emoji:nth-child(15) { font-size: 25px !important; }
+            .rose-emoji:nth-child(16) { font-size: 23px !important; }
+            .rose-emoji:nth-child(17) { font-size: 20px !important; }
+            .rose-emoji:nth-child(18) { font-size: 24px !important; }
+            .rose-emoji:nth-child(19) { font-size: 26px !important; }
+            .rose-emoji:nth-child(20) { font-size: 22px !important; }
         }
 
         /* 密码遮罩 */
@@ -270,8 +315,8 @@
             left: 0;
             transform: rotate(-90deg);
             -webkit-transform: rotate(-90deg);
-            transition: transform 0.2s ease;
-            -webkit-transition: transform 0.2s ease;
+            transition: transform 0.1s linear;
+            -webkit-transition: transform 0.1s linear;
             clip: rect(0, 60px, 60px, 30px);
             -webkit-clip: rect(0, 60px, 60px, 30px);
             transform-origin: center center;
@@ -291,8 +336,8 @@
 <body>
     <div class="stars" id="stars"></div>
 
-    <!-- 玫瑰emoji容器 - 左右两侧 -->
-    <div class="rose-container rose-left" id="roseLeft">
+    <!-- 玫瑰emoji容器 - 底部铺满+叠加 -->
+    <div class="rose-container" id="roseContainer">
         <span class="rose-emoji">🌹</span>
         <span class="rose-emoji">🌹</span>
         <span class="rose-emoji">🌹</span>
@@ -303,8 +348,6 @@
         <span class="rose-emoji">🌹</span>
         <span class="rose-emoji">🌹</span>
         <span class="rose-emoji">🌹</span>
-    </div>
-    <div class="rose-container rose-right" id="roseRight">
         <span class="rose-emoji">🌹</span>
         <span class="rose-emoji">🌹</span>
         <span class="rose-emoji">🌹</span>
@@ -382,7 +425,7 @@
         </div>
     </div>
 
-    <audio id="backgroundMusic" loop>
+    <audio id="backgroundMusic" loop preload="auto">
         <source src="background.mp3" type="audio/mpeg">
         您的浏览器不支持音频播放
     </audio>
@@ -399,8 +442,7 @@
         const poemContent = document.getElementById('poemContent');
         const correctPassword = 'abb'; // 密码大小写均可
         // 玫瑰元素
-        const roseLeft = document.getElementById('roseLeft');
-        const roseRight = document.getElementById('roseRight');
+        const roseContainer = document.getElementById('roseContainer');
 
         // 环形进度条元素
         const progressRingFill = document.getElementById('progressRingFill');
@@ -488,27 +530,65 @@
             console.log(`进度条更新：${Math.round(percent*100)}%，角度：${angle}deg`);
         }
 
-        // 加载音频并监听进度
+        // 高优先级加载音频并监听进度
         function loadAudioWithProgress() {
-            try {
+            // 1. 强制提升加载优先级
+            audio.preload = 'auto';
+            audio.autobuffer = true;
+            
+            // 2. 使用fetch预加载提升优先级（跨域需配置CORS）
+            fetch('background.mp3', { 
+                method: 'GET', 
+                mode: 'no-cors',
+                priority: 'high' // 高优先级请求
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Fetch预加载失败');
+            })
+            .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                audio.src = blobUrl;
                 audio.load();
-                console.log('🎵 开始优先加载音频');
-            } catch (e) {
-                console.error('❌ 音频load执行失败:', e);
-                mockProgress();
-                showPasswordUI();
-                return;
-            }
-
-            audio.addEventListener('loadedmetadata', () => {
-                console.log(`🎧 音频元数据加载完成，总时长：${audio.duration}秒`);
-            });
-
-            audio.addEventListener('progress', () => {
-                if (isNaN(audio.duration) || audio.duration === Infinity) {
-                    console.warn('⚠️ 无法获取音频总时长，跳过进度计算');
+                console.log('🎵 Fetch预加载成功，使用Blob URL播放');
+            })
+            .catch(err => {
+                console.error('❌ Fetch预加载失败，使用原地址:', err);
+                try {
+                    audio.load();
+                } catch (e) {
+                    console.error('❌ 音频load执行失败:', e);
+                    mockProgress();
+                    showPasswordUI();
                     return;
                 }
+            });
+
+            console.log('🎵 开始高优先级加载音频');
+
+            // 3. 监听加载进度（更频繁的进度更新）
+            let lastUpdateTime = 0;
+            audio.addEventListener('progress', () => {
+                const now = Date.now();
+                // 限制更新频率，避免过度渲染（每50ms更新一次）
+                if (now - lastUpdateTime < 50) return;
+                lastUpdateTime = now;
+
+                if (isNaN(audio.duration) || audio.duration === Infinity) {
+                    // 处理无法获取duration的情况
+                    if (audio.buffered.length > 0) {
+                        const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+                        // 估算总时长（302k mp3约1-2分钟，这里用60秒估算）
+                        const estimatedDuration = 60;
+                        const percent = Math.min(bufferedEnd / estimatedDuration, 1);
+                        console.log(`🎧 音频加载进度（估算）：${Math.round(percent * 100)}%`);
+                        updateProgressRing(percent);
+                    }
+                    return;
+                }
+
                 let bufferedEnd = 0;
                 if (audio.buffered.length > 0) {
                     bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
@@ -518,10 +598,15 @@
                 updateProgressRing(percent);
             });
 
+            audio.addEventListener('loadedmetadata', () => {
+                console.log(`🎧 音频元数据加载完成，总时长：${audio.duration}秒`);
+            });
+
             audio.addEventListener('canplaythrough', () => {
                 console.log('✅ 音频加载完成，跳转密码界面');
                 updateProgressRing(1);
-                showPasswordUI();
+                // 延迟500ms显示密码界面，让进度条完成100%动画
+                setTimeout(showPasswordUI, 500);
             }, { once: true });
 
             audio.addEventListener('error', (err) => {
@@ -534,9 +619,6 @@
                 console.error('❌ 音频加载被中止:', err);
                 showPasswordUI();
             }, { once: true });
-
-            // 测试用：开启后模拟进度条动画
-            // mockProgress();
         }
 
         // 模拟进度条动画
@@ -549,7 +631,7 @@
                     clearInterval(mockProgressTimer);
                 }
                 updateProgressRing(currentPercent);
-            }, 500);
+            }, 300);
         }
 
         // 显示密码界面
@@ -584,10 +666,9 @@
 
             if (isAtEnd) {
                 isRoseShowed = true;
-                // 延迟1秒显示玫瑰，带淡入效果
+                // 延迟1秒显示玫瑰，带淡入+上移动画
                 setTimeout(() => {
-                    roseLeft.classList.add('show');
-                    roseRight.classList.add('show');
+                    roseContainer.classList.add('show');
                 }, 1000);
                 // 移除滚动监听，避免重复触发
                 poemContainer.removeEventListener('scroll', debouncedCheckScroll);
