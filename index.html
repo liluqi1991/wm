@@ -70,6 +70,42 @@
             100% { opacity: 0.4; transform: scale(0.9); }
         }
 
+        /* 玫瑰emoji样式 - 左右垂直排列，淡入效果 */
+        .rose-container {
+            position: fixed;
+            top: 0;
+            height: 100vh;
+            height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1; /* 低于诗句，高于星星 */
+            opacity: 0;
+            transition: opacity 1.2s ease-out; /* 淡入淡出过渡 */
+            -webkit-transition: opacity 1.2s ease-out;
+            pointer-events: none; /* 不影响滚动/点击 */
+        }
+
+        .rose-left {
+            left: 15px; /* 与诗句容器左右内边距一致 */
+        }
+
+        .rose-right {
+            right: 15px;
+        }
+
+        .rose-container.show {
+            opacity: 1; /* 淡入显示 */
+        }
+
+        .rose-emoji {
+            font-size: 20px !important;
+            line-height: 1.5;
+            /* 适配不同屏幕高度，自动调整间距 */
+            flex-shrink: 0;
+        }
+
         /* 诗句容器 - 上下无间距，正常显示 */
         .poem-container {
             position: relative;
@@ -96,7 +132,7 @@
             display: none;
         }
 
-        /* 诗句文字 - 关键：上下边距均为一行字高度，淡入+位移过渡 */
+        /* 诗句文字 - 顶部1个行距，底部2个行距 */
         .poem-content {
             color: #4a3246;
             font-size: 16px !important;
@@ -106,14 +142,11 @@
             font-weight: 400;
             position: relative;
             z-index: 3;
-            /* 上下边距：均为一个行距（一行字高度） */
             margin-top: 38px;
-            margin-bottom: 38px;
-            /* 初始状态：透明 + 屏幕底部外 */
+            margin-bottom: 76px; /* 38*2=76，两个行距 */
             opacity: 0;
             transform: translateY(calc(100vh + 100px));
             -webkit-transform: translateY(calc(100vh + 100px));
-            /* 淡入+位移过渡：确保动画平滑 */
             transition: 
                 opacity 1s ease-out,
                 transform 0.1s ease;
@@ -130,9 +163,11 @@
             .poem-content {
                 font-size: 18px !important;
                 line-height: 2.5;
-                /* 上下边距同步适配 */
                 margin-top: 45px;
-                margin-bottom: 45px;
+                margin-bottom: 90px; /* 45*2=90，两个行距 */
+            }
+            .rose-emoji {
+                font-size: 22px !important; /* 大屏玫瑰稍大 */
             }
         }
 
@@ -221,7 +256,7 @@
             left: 0;
         }
 
-        /* 环形进度条 */
+        /* 环形进度条 - 修复兼容性 */
         .progress-ring__fill {
             width: 100%;
             height: 100%;
@@ -237,19 +272,50 @@
             -webkit-transform: rotate(-90deg);
             transition: transform 0.2s ease;
             -webkit-transition: transform 0.2s ease;
-            clip: rect(0, 60px, 60px, 30px); /* 只显示左半部分，通过旋转实现进度 */
+            clip: rect(0, 60px, 60px, 30px);
+            -webkit-clip: rect(0, 60px, 60px, 30px);
+            transform-origin: center center;
+            -webkit-transform-origin: center center;
         }
 
-        /* 进度条覆盖层（右半部分） */
+        /* 进度条覆盖层（右半部分）- 修复兼容性 */
         .progress-ring__fill--right {
             clip: rect(0, 30px, 60px, 0);
-            opacity: 0;
             -webkit-clip: rect(0, 30px, 60px, 0);
+            opacity: 0;
+            transform-origin: center center;
+            -webkit-transform-origin: center center;
         }
     </style>
 </head>
 <body>
     <div class="stars" id="stars"></div>
+
+    <!-- 玫瑰emoji容器 - 左右两侧 -->
+    <div class="rose-container rose-left" id="roseLeft">
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+    </div>
+    <div class="rose-container rose-right" id="roseRight">
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+        <span class="rose-emoji">🌹</span>
+    </div>
 
     <div class="password-mask" id="passwordMask">
         <!-- 加载提示 + 环形进度条 -->
@@ -261,7 +327,7 @@
             </div>
             加载中...
         </div>
-        <div class="mask-hint" id="maskHint">请输入密码</div>
+        <div class="mask-hint" id="maskHint">abbm</div>
         <input type="password" class="password-input" id="passwordInput" placeholder="输入密码自动解锁" autofocus>
     </div>
 
@@ -331,7 +397,11 @@
         const stars = document.getElementById('stars');
         const poemContainer = document.getElementById('poemContainer');
         const poemContent = document.getElementById('poemContent');
-        const correctPassword = 'abb';
+        const correctPassword = 'abb'; // 密码大小写均可
+        // 玫瑰元素
+        const roseLeft = document.getElementById('roseLeft');
+        const roseRight = document.getElementById('roseRight');
+
         // 环形进度条元素
         const progressRingFill = document.getElementById('progressRingFill');
         const progressRingFillRight = document.getElementById('progressRingFillRight');
@@ -340,23 +410,32 @@
         let isPasswordUIShowed = false;
         let isAnimating = false; 
         let animationFrameId = null; 
-        let loadTimeoutTimer = null; // 5秒超时定时器
+        let loadTimeoutTimer = null; // 7秒超时定时器
+        let mockProgressTimer = null;
+        let isRoseShowed = false; // 玫瑰是否已显示（避免重复触发）
 
-        // 缓动函数：easeOutCubic（减速，实现平滑递减速度）
+        // 缓动函数：easeOutCubic
         const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
-        // 页面初始化：优先加载音频 + 5秒超时逻辑
+        // 防抖函数：避免滚动频繁触发判断
+        const debounce = (fn, delay) => {
+            let timer = null;
+            return function(...args) {
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        };
+
+        // 页面初始化
         document.addEventListener('DOMContentLoaded', () => {
             initStars();
-            // 1. 初始化环形进度条（默认0%）
             updateProgressRing(0);
-            // 2. 优先加载音频
             loadAudioWithProgress();
-            // 3. 设置5秒超时定时器
+            // 7秒超时强制跳转
             loadTimeoutTimer = setTimeout(() => {
-                console.log('⏰ 音频加载超时（5秒），强制跳转密码界面');
+                console.log('⏰ 音频加载超时（7秒），强制跳转密码界面');
                 showPasswordUI();
-            }, 5000);
+            }, 7000);
             
             window.addEventListener('resize', () => {
                 document.documentElement.style.fontSize = '16px !important';
@@ -391,73 +470,95 @@
 
         // 更新环形进度条
         function updateProgressRing(percent) {
+            percent = Math.max(0, Math.min(1, percent));
             const angle = percent * 360;
-            // 进度≤50%：只显示左半部分
             if (angle <= 180) {
-                progressRingFill.style.transform = `rotate(-90deg + ${angle}deg)`;
-                progressRingFill.style.webkitTransform = `rotate(-90deg + ${angle}deg)`;
                 progressRingFillRight.style.opacity = 0;
+                const rotateAngle = -90 + angle;
+                progressRingFill.style.transform = `rotate(${rotateAngle}deg)`;
+                progressRingFill.style.webkitTransform = `rotate(${rotateAngle}deg)`;
             } else {
-                // 进度>50%：左半部分满转，右半部分显示剩余角度
                 progressRingFill.style.transform = `rotate(90deg)`;
                 progressRingFill.style.webkitTransform = `rotate(90deg)`;
                 progressRingFillRight.style.opacity = 1;
-                progressRingFillRight.style.transform = `rotate(-90deg + ${angle}deg)`;
-                progressRingFillRight.style.webkitTransform = `rotate(-90deg + ${angle}deg)`;
+                const rotateAngle = -90 + angle;
+                progressRingFillRight.style.transform = `rotate(${rotateAngle}deg)`;
+                progressRingFillRight.style.webkitTransform = `rotate(${rotateAngle}deg)`;
             }
+            console.log(`进度条更新：${Math.round(percent*100)}%，角度：${angle}deg`);
         }
 
         // 加载音频并监听进度
         function loadAudioWithProgress() {
-            // 立即执行音频加载
             try {
                 audio.load();
                 console.log('🎵 开始优先加载音频');
             } catch (e) {
                 console.error('❌ 音频load执行失败:', e);
+                mockProgress();
                 showPasswordUI();
                 return;
             }
 
-            // 监听音频加载进度
+            audio.addEventListener('loadedmetadata', () => {
+                console.log(`🎧 音频元数据加载完成，总时长：${audio.duration}秒`);
+            });
+
             audio.addEventListener('progress', () => {
-                if (audio.duration === Infinity || isNaN(audio.duration)) return;
-                // 计算已缓冲进度（百分比）
-                const bufferedEnd = audio.buffered.length > 0 ? audio.buffered.end(audio.buffered.length - 1) : 0;
-                const percent = Math.min(bufferedEnd / audio.duration, 1);
+                if (isNaN(audio.duration) || audio.duration === Infinity) {
+                    console.warn('⚠️ 无法获取音频总时长，跳过进度计算');
+                    return;
+                }
+                let bufferedEnd = 0;
+                if (audio.buffered.length > 0) {
+                    bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+                }
+                const percent = bufferedEnd / audio.duration;
                 console.log(`🎧 音频加载进度：${Math.round(percent * 100)}%`);
-                // 更新环形进度条
                 updateProgressRing(percent);
             });
 
-            // 音频加载完成（可完整播放）
             audio.addEventListener('canplaythrough', () => {
                 console.log('✅ 音频加载完成，跳转密码界面');
-                updateProgressRing(1); // 进度条拉满
+                updateProgressRing(1);
                 showPasswordUI();
             }, { once: true });
 
-            // 音频加载失败
             audio.addEventListener('error', (err) => {
                 console.error('❌ 音频加载失败:', err);
+                updateProgressRing(1);
                 showPasswordUI();
             }, { once: true });
 
-            // 音频加载被中止
             audio.addEventListener('abort', (err) => {
                 console.error('❌ 音频加载被中止:', err);
                 showPasswordUI();
             }, { once: true });
+
+            // 测试用：开启后模拟进度条动画
+            // mockProgress();
         }
 
-        // 显示密码界面（清理定时器 + 隐藏进度条）
+        // 模拟进度条动画
+        function mockProgress() {
+            let currentPercent = 0;
+            mockProgressTimer = setInterval(() => {
+                currentPercent += 0.05;
+                if (currentPercent >= 1) {
+                    currentPercent = 1;
+                    clearInterval(mockProgressTimer);
+                }
+                updateProgressRing(currentPercent);
+            }, 500);
+        }
+
+        // 显示密码界面
         function showPasswordUI() {
             if (isPasswordUIShowed) return;
             isPasswordUIShowed = true;
 
-            // 清理5秒超时定时器
             clearTimeout(loadTimeoutTimer);
-            // 隐藏加载进度，显示密码输入
+            clearInterval(mockProgressTimer);
             loadingIndicator.style.display = 'none';
             maskHint.style.display = 'block';
             passwordInput.style.display = 'block';
@@ -471,6 +572,30 @@
                 }
             }, 300);
         }
+
+        // 判断是否滚动到诗句末尾（最后一行+底部边距露出）
+        function checkScrollToEnd() {
+            if (isRoseShowed) return; // 已显示玫瑰，不再判断
+
+            const { scrollTop, clientHeight, scrollHeight } = poemContainer;
+            const bottomMargin = parseFloat(getComputedStyle(poemContent).marginBottom) || 0;
+            // 10px容错，确保最后一行+底部边距完全露出
+            const isAtEnd = scrollTop + clientHeight >= scrollHeight - bottomMargin - 10;
+
+            if (isAtEnd) {
+                isRoseShowed = true;
+                // 延迟1秒显示玫瑰，带淡入效果
+                setTimeout(() => {
+                    roseLeft.classList.add('show');
+                    roseRight.classList.add('show');
+                }, 1000);
+                // 移除滚动监听，避免重复触发
+                poemContainer.removeEventListener('scroll', debouncedCheckScroll);
+            }
+        }
+
+        // 防抖后的滚动监听（200ms延迟，避免频繁触发）
+        const debouncedCheckScroll = debounce(checkScrollToEnd, 200);
 
         // 解析transform的Y偏移值
         function getTransformY(element) {
@@ -517,9 +642,13 @@
             
             isAnimating = true;
 
+            // 绑定动画停止监听
             poemContainer.addEventListener('touchstart', stopPoemAnimation, { once: true, passive: true });
             poemContainer.addEventListener('scroll', stopPoemAnimation, { once: true, passive: true });
             poemContainer.addEventListener('mousedown', stopPoemAnimation, { once: true, passive: true });
+
+            // 绑定滚动监听，判断是否到末尾显示玫瑰
+            poemContainer.addEventListener('scroll', debouncedCheckScroll, { passive: true });
 
             const animate = () => {
                 if (!isAnimating) return;
@@ -545,10 +674,11 @@
             animationFrameId = requestAnimationFrame(animate);
         }
 
-        // 密码验证
+        // 密码验证（大小写均可）
         passwordInput.addEventListener('input', (e) => {
-            const inputValue = e.target.value.trim();
-            if (inputValue === correctPassword) {
+            const inputValue = e.target.value.trim().toLowerCase(); // 输入值转小写
+            const targetPassword = correctPassword.toLowerCase(); // 正确密码转小写
+            if (inputValue === targetPassword) {
                 passwordMask.style.opacity = 0;
                 passwordMask.style.pointerEvents = 'none';
                 setTimeout(() => passwordMask.style.display = 'none', 500);
@@ -558,7 +688,7 @@
                 
                 startPoemAnimation();
                 
-                // 播放音频（兜底逻辑）
+                // 播放音频
                 audio.play().catch(err => {
                     console.log('音频自动播放失败，点击页面播放:', err);
                     document.body.addEventListener('click', () => audio.play(), { once: true });
