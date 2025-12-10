@@ -79,11 +79,11 @@
             -webkit-transform: translateX(5px);
             /* 淡入过渡效果调整为1秒 */
             transition: 
-                opacity 0.5s ease-out,
-                transform 0.5s ease-out;
+                opacity 2s ease-out,
+                transform 2s ease-out;
             -webkit-transition: 
-                opacity 0.5s ease-out,
-                -webkit-transform 0.5s ease-out;
+                opacity 2s ease-out,
+                -webkit-transform 2s ease-out;
             /* 玫瑰大小适配 */
             font-size: inherit !important;
             line-height: 1;
@@ -290,12 +290,12 @@
 新年钟声响起，我们去人海中跨年，在送别时相见
 与你重逢的瞬间，对视的目光没有陌生，只有炽热蔓延
 纵然知道你将走向天边，也愿握住这份温暖
-深夜车轮轻响深巷，街灯泛着昏黄光线
+深巷中车轮轻响，街灯泛着昏黄光线
 心里藏着欢喜，也裹着细碎的伤感
 像是纪念过往走过的晨昏，又像给这段忽明忽暗的路写下句点
 五彩气球从人群中挣脱，飞向暗蓝的天，眼前一切如梦如幻
 不知道是重逢的斑斓，
-还是怕你像气球飞远，只留我空握余温在掌间
+还是怕你像这气球飞远，只留我空握余温在掌间
 
 转眼来到春天，草莓成熟时又相见
 像梦一场，情节忽然反转
@@ -502,7 +502,7 @@
             const { scrollTop, clientHeight, scrollHeight } = poemContainer;
             // 优化触发阈值：滚动到距离底部80px内就触发（最后一行可见时）
             // 80px适配不同屏幕尺寸，确保最后一行出现时立即触发
-            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 200;
+            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 120;
             
             if (isAtBottom) {
                 isRoseShowed = true;
